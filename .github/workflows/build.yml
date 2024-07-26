@@ -46,7 +46,7 @@ jobs:
       - name: Get args
         run: |
           TARGET_CPU_ARG=""
-          if [ -n ${{ inputs.target_cpu }} ]; then
+          if [ -n "${{ inputs.target_cpu }}" ]; then
             TARGET_CPU_ARG="-mcpu=${{ inputs.target_cpu }}"
           fi
           echo "TARGET_CPU_ARG=$TARGET_CPU_ARG" >> $GITHUB_ENV
@@ -73,6 +73,8 @@ jobs:
 
           LLD_BINARY="lld-${{ inputs.clang_bootstrap_major_version }}"
           echo "LLD_BINARY=$LLD_BINARY" >> $GITHUB_ENV
+
+          echo $GITHUB_ENV
 
       - name: cmake configure
         run: | 

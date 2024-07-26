@@ -11,6 +11,10 @@ on:
         options:
           - toolchains-ubuntu-22.04-x86
           - toolchains-ubuntu-22.04-arm
+      github_tag:
+        description: "Tag to upload the release to."
+        type: string
+        required: false
   
 env:
   XZ_OPT: "-T0"
@@ -48,13 +52,24 @@ jobs:
             tar -cf - $full_name | zstd --ultra -22 -o "../artifacts/$full_name.tar.zst"
           done
 
-      - name: List
-        run: ls ; ls downloads ; ls artifacts
+      - name: Determine Release Tag
+        run: |
+          RELEASE_TAG="rust-${{ inputs.rust_version }}"
+          if [ -n "${{ inputs.github_tag }}" ]; then
+            RELEASE_TAG="${{ inputs.github_tag }}"
+          fi
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
 
-      - name: Upload zstd Compressed Artifacts
+      - name: Save zstd Compressed Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: toolchains
+          name: rust-toolchains
           path: "artifacts/*.tar.zst"
 
-
+      - name: Upload zstd Compressed Artifacts to Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: "/artifacts/*.tar.zst"
+          file_glob: true
+          tag: ${{ env.RELEASE_TAG }}
+          overwrite: true

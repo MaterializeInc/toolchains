@@ -1,0 +1,75 @@
+on:
+  workflow_dispatch:
+    inputs:
+      clang_bootstrap_major_version:
+        description: "Major version of clang we'll use to build the clang toolchain."
+        type: number
+        required: true
+      clang_version:
+        description: "Version of clang we'll build."
+        type: string
+        required: true
+      cpu_target:
+        description: "Type of CPU to optimize for."
+        type: string
+        required: false
+
+name: Build
+
+jobs:
+  build:
+    name: build clang x86-64
+    env:
+      CLANG_ARCH:"x86-64"
+    runs-on: toolchains-ubuntu-22.04-x86
+    steps:
+      - name: Install required tools
+        run: sudo apt-get install -y zstd cmake
+
+      - name: Install bootstrap clang
+        run: sudo clang/llvm.sh ${{ inputs.clang_bootstrap_major_version }}
+
+      - name: Clone llvm-project at Version
+        uses: actions/checkout@v4
+        with:
+          name: llvm/llvm-project
+          ref: 'llvmorg-${{ inputs.clang_version }}'
+
+      - name: Get "target cpu"
+        run: |
+          TARGET_CPU_ARG=""
+          if [ -n ${{ inputs.target_cpu }} ]; then
+            TARGET_CPU_ARG="-mcpu=${{ inputs.target_cpu }}"
+          fi
+          echo $TARGET_CPU_ARG
+
+      - name: cmake configure
+        run: | 
+          libs_dir="$CLANG_ARG"-linux-gnu
+          echo $libs_dir
+
+          cd llvm-project
+          cmake -S llvm -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS="$TARGET_CPU_ARG -flto=thin -pthread" \
+            -DCMAKE_CXX_FLAGS="$TARGET_CPU_ARG -flto=thin -pthread" \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="on" \
+            -DLLVM_ENABLE_PROJECTS="clang;lld" \
+            -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
+            -DLLVM_DISTRIBUTION_COMPONENTS="clang-resource-headers" \
+            -DCMAKE_C_COMPILER=clang-17 \
+            -DCMAKE_CXX_COMPILER=clang++-17 \
+            -DLLVM_USE_LINKER=lld-17 \
+            -DLLVM_ENABLE_LIBCXX=ON \
+            -DLLVM_STATIC_LINK_CXX_STDLIB=ON \
+            -DLLVM_ENABLE_LTO=Thin \
+            -DLLVM_ENABLE_PIC=ON \
+            -DLLVM_ENABLE_THREADS=ON \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DLLVM_INCLUDE_UTILS=OFF \
+            -DLLVM_INCLUDE_TESTS=OFF \
+            -DLLVM_INCLUDE_EXAMPLES=OFF \
+            -DLLVM_INCLUDE_BENCHMARKS=OFF \
+            -DLLVM_INCLUDE_DOCS=OFF \
+            -DTerminfo_LIBRARIES=/usr/lib/$libs_dir/libtinfo.a \
+            -DZLIB_LIBRARY=/usr/lib/$libs_dir/libz.a

@@ -1,0 +1,12 @@
+clang*
+lld
+llvm-ar
+llvm-as
+llvm-cov
+llvm-dwp
+llvm-libtool-darwin
+llvm-nm
+llvm-objdump
+llvm-profdata
+llvm-strip
+llvm-ranlib

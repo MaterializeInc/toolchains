@@ -92,7 +92,9 @@ jobs:
             -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
             -DLLVM_DISTRIBUTION_COMPONENTS="clang-resource-headers" \
             -DCMAKE_C_COMPILER="$C_BINARY" \
+            -DCMAKE_C_LINK_EXECUTABLE="$LLD_BINARY" \
             -DCMAKE_CXX_COMPILER="$CXX_BINARY" \
+            -DCMAKE_CXX_LINK_EXECUTABLE="$LLD_BINARY" \
             -DLLVM_USE_LINKER="$LLD_BINARY" \
             -DLLVM_ENABLE_LIBCXX=ON \
             -DLLVM_STATIC_LINK_CXX_STDLIB=ON \

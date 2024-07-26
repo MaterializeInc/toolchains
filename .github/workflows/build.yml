@@ -43,16 +43,14 @@ jobs:
           ref: 'llvmorg-${{ inputs.clang_version }}'
           path: llvm-project
 
-      - name: Get target cpu
+      - name: Get args
         run: |
           TARGET_CPU_ARG=""
           if [ -n ${{ inputs.target_cpu }} ]; then
             TARGET_CPU_ARG="-mcpu=${{ inputs.target_cpu }}"
           fi
-          echo $TARGET_CPU_ARG
+          echo TARGET_CPU_ARG=$TARGET_CPU_ARG
 
-      - name: Get target arch
-        run: |
           case ${{ inputs.runner }} in
             toolchains-ubuntu-22.04-x86)
               CLANG_ARCH=x86-64
@@ -64,6 +62,20 @@ jobs:
               echo "Programming error, unknown runner"
               exit 1
               ;;
+          esac
+          echo CLANG_ARCH=$CLANG_ARCH
+
+          C_BINARY="clang-${{ inputs.clang_bootstrap_major_version }}"
+          echo C_BINARY=$C_BINARY
+
+          CXX_BINARY="clang++-${{ inputs.clang_bootstrap_major_version }}"
+          echo CXX_BINARY=$CXX_BINARY
+
+          LLD_BINARY="lld-${{ inputs.clang_bootstrap_major_version }}"
+          echo LLD_BINARY=$LLD_BINARY
+
+      - name: Get target arch
+        run: |
 
       - name: cmake configure
         run: | 
@@ -79,9 +91,9 @@ jobs:
             -DLLVM_ENABLE_PROJECTS="clang;lld" \
             -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
             -DLLVM_DISTRIBUTION_COMPONENTS="clang-resource-headers" \
-            -DCMAKE_C_COMPILER=clang-17 \
-            -DCMAKE_CXX_COMPILER=clang++-17 \
-            -DLLVM_USE_LINKER=lld-17 \
+            -DCMAKE_C_COMPILER=$C_BINARY \
+            -DCMAKE_CXX_COMPILER=$CXX_BINARY \
+            -DLLVM_USE_LINKER=$LLD_BINARY \
             -DLLVM_ENABLE_LIBCXX=ON \
             -DLLVM_STATIC_LINK_CXX_STDLIB=ON \
             -DLLVM_ENABLE_LTO=Thin \

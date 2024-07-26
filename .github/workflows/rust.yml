@@ -29,6 +29,15 @@ jobs:
           "x86_64-apple-darwin",
           "aarch64-apple-darwin",
         ]
+        component: [
+          "rustc",
+          "rust-std",
+          "cargo",
+          "clippy",
+          "rustfmt",
+          "llvm-tools",
+          "rustc-dev"
+        ]
     
     steps:
       - name: Download Rust Components
@@ -36,20 +45,18 @@ jobs:
           mkdir downloads
           mkdir artifacts
 
-          components=("rustc", "rust-std", "cargo", "clippy", "rustfmt", "llvm-tools", "rustc-dev")
+          component={{ matrix.component }}
           target=${{ matrix.target }}
           version=${{ inputs.rust_version }}
 
           cd downloads
-          for component in "${components[@]}"; do
-            full_name="$component-$version-$target"
-            xz_name="$full_name.tar.xz"
+          full_name="$component-$version-$target"
+          xz_name="$full_name.tar.xz"
 
-            wget https://static.rust-lang.org/dist/$xz_name
-            
-            tar -xJf $xz_name
-            tar -cf - $full_name | zstd --ultra -22 -o "../artifacts/$full_name.tar.zst"
-          done
+          wget https://static.rust-lang.org/dist/$xz_name
+          
+          tar -xJf $xz_name
+          tar -cf - $full_name | zstd --ultra -22 -o "../artifacts/$full_name.tar.zst"
 
       - name: Determine Release Tag
         run: |

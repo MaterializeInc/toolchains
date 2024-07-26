@@ -74,9 +74,6 @@ jobs:
           LLD_BINARY="lld-${{ inputs.clang_bootstrap_major_version }}"
           echo LLD_BINARY=$LLD_BINARY
 
-      - name: Get target arch
-        run: |
-
       - name: cmake configure
         run: | 
           libs_dir="$CLANG_ARCH"-linux-gnu

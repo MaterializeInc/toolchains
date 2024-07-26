@@ -38,20 +38,18 @@ jobs:
           version=${{ inputs.rust_version }}
 
           cd downloads
-          for target in "${targets[@]}"; do
-            for component in "${components[@]}"; do
-              full_name="$component-$version-$target"
-              xz_name="$full_name.tar.xz"
+          for component in "${components[@]}"; do
+            full_name="$component-$version-$target"
+            xz_name="$full_name.tar.xz"
 
-              wget https://static.rust-lang.org/dist/$xz_name
-              
-              tar -xJf $xz_name
-              tar -cf - $full_name | zstd --ultra -22 -o "../artifacts/$full_name.tar.zst"
-            done
+            wget https://static.rust-lang.org/dist/$xz_name
+            
+            tar -xJf $xz_name
+            tar -cf - $full_name | zstd --ultra -22 -o "../artifacts/$full_name.tar.zst"
           done
 
       - name: List
-        run: ls
+        run: ls ; ls downloads ; ls artifacts
 
       - name: Upload zstd Compressed Artifacts
         uses: actions/upload-artifact@v4

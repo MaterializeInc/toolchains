@@ -94,6 +94,7 @@ jobs:
             -DCMAKE_C_COMPILER="$C_BINARY" \
             -DCMAKE_CXX_COMPILER="$CXX_BINARY" \
             -DCMAKE_CXX_STANDARD=17 \
+            -DLLVM_STATIC_LINK_CXX_STDLIB=ON \
             -DLLVM_USE_LINKER="$LLD_BINARY" \
             -DLLVM_ENABLE_LTO=Thin \
             -DLLVM_ENABLE_PIC=ON \
@@ -131,9 +132,9 @@ jobs:
       - name: package toolchain
         run: |
           mkdir package package/bin package/lib package/include
-          cat clang/bin.txt | while read -r val; do cp -P llvm-project/build/bin/$val package/bin/; done
-          cat clang/include.txt | while read -r val; do cp -P llvm-project/build/include/$val package/include/; done
-          cat clang/lib.txt | while read -r val; do cp -P llvm-project/build/lib/$val package/lib/; done
+          cat clang/bin.txt | while read -r val; do cp -rP llvm-project/build/bin/$val package/bin/; done
+          cat clang/include.txt | while read -r val; do cp -rP llvm-project/build/include/$val package/include/; done
+          cat clang/lib.txt | while read -r val; do cp -rP llvm-project/build/lib/$val package/lib/; done
 
           cd package
           tar -cf - * | zstd --ultra -22 -o "../linux_$CLANG_ARCH.tar.zst"

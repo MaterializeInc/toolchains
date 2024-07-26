@@ -47,6 +47,8 @@ jobs:
               
               tar -xJf $xz_name
               tar -cf - $xz_name | zstd --ultra -22 -o "../artifacts/$tar_name.zst"
+            done
+          done
 
       - name: Upload zstd Compressed Artifacts
         uses: actions/upload-artifact@v4

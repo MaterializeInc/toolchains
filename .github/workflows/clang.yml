@@ -19,6 +19,10 @@ on:
         description: "Type of CPU to optimize for."
         type: string
         required: false
+      github_tag:
+        description: "Tag to upload the release to."
+        type: string
+        required: false
 
 name: Clang
 
@@ -26,6 +30,8 @@ jobs:
   build_clang:
     name: build clang ${{ inputs.runner }}
     runs-on: ${{ inputs.runner }}
+    permissions:
+      contents: write
     steps:
       - name: Install required tools
         run: sudo apt-get install -y zstd cmake gcc
@@ -65,6 +71,7 @@ jobs:
               ;;
           esac
           echo "CLANG_ARCH=$CLANG_ARCH" >> $GITHUB_ENV
+          echo "CLANG_TARGET=$CLANG_ARCH-unknown-linux-gnu" >> $GITHUB_ENV
 
           C_BINARY="clang-${{ inputs.clang_bootstrap_major_version }}"
           echo "C_BINARY=$C_BINARY" >> $GITHUB_ENV
@@ -74,6 +81,12 @@ jobs:
 
           LLD_BINARY="lld-${{ inputs.clang_bootstrap_major_version }}"
           echo "LLD_BINARY=$LLD_BINARY" >> $GITHUB_ENV
+
+          RELEASE_TAG="v${{ inputs.clang_version }}"
+          if [ -n "${{ inputs.github_tag }}" ]; then
+            RELEASE_TAG="${{ inputs.github_tag }}"
+          fi
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
 
           echo $GITHUB_ENV
 
@@ -132,15 +145,22 @@ jobs:
       - name: package toolchain
         run: |
           mkdir package package/bin package/lib package/include
-          cat clang/bin.txt | while read -r val; do cp -rP llvm-project/build/bin/$val package/bin/; done
-          cat clang/include.txt | while read -r val; do cp -rP llvm-project/build/include/$val package/include/; done
-          cat clang/lib.txt | while read -r val; do cp -rP llvm-project/build/lib/$val package/lib/; done
+          cat clang/bin.txt | while read -r val; do eval cp -rP llvm-project/build/bin/$val package/bin/; done
+          cat clang/include.txt | while read -r val; do eval cp -rP llvm-project/build/include/$val package/include/; done
+          cat clang/lib.txt | while read -r val; do eval cp -rP llvm-project/build/lib/$val package/lib/; done
 
           cd package
           tar -cf - * | zstd --ultra -22 -o "../linux_$CLANG_ARCH.tar.zst"
 
-      - name: upload toolchain
+      - name: Upload Toolchain Artifact
         uses: actions/upload-artifact@v4
         with:
           name: "linux_$CLANG_ARCH.tar.zst"
           path: "linux_$CLANG_ARCH.tar.zst"
+
+      - name: Upload toolchain to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: "linux_$CLANG_ARCH.tar.zst"
+          tag: "$RELEASE_TAG"
+          overwrite: true

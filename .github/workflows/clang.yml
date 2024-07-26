@@ -85,6 +85,7 @@ jobs:
           cd llvm-project
           cmake -S llvm -B build \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_VERBOSE_MAKEFILE=ON \
             -DCMAKE_C_FLAGS="$TARGET_CPU_ARG -flto=thin -pthread" \
             -DCMAKE_CXX_FLAGS="$TARGET_CPU_ARG -flto=thin -pthread" \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="on" \

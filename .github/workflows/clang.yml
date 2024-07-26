@@ -20,10 +20,10 @@ on:
         type: string
         required: false
 
-name: Build
+name: Clang
 
 jobs:
-  build:
+  build_clang:
     name: build clang ${{ inputs.runner }}
     runs-on: ${{ inputs.runner }}
     steps:
@@ -132,5 +132,16 @@ jobs:
 
       - name: package toolchain
         run: |
-          ls
+          mkdir package package/bin package/lib package/include
+          cat clang/bin.txt | while read -r val; do cp -P llvm-project/build/bin/$val package/bin/; done
+          cat clang/include.txt | while read -r val; do cp -P llvm-project/build/include/$val package/include/; done
+          cat clang/lib.txt | while read -r val; do cp -P llvm-project/build/lib/$val package/lib/; done
 
+          cd package
+          tar -cf - * | zstd --ultra -22 -o "../linux_$CLANG_ARCH.tar.zst"
+
+      - name: upload toolchain
+        uses: actions/upload-artifact@v4
+        with:
+          name: "linux_$CLANG_ARCH.tar.zst"
+          path: "linux_$CLANG_ARCH.tar.zst"

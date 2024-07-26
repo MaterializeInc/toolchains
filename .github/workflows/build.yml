@@ -28,7 +28,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
       - name: Install required tools
-        run: sudo apt-get install -y zstd cmake clang gcc
+        run: sudo apt-get install -y zstd cmake gcc
 
       - name: Clone MaterializeInc/toolchains repo
         uses: actions/checkout@v4
@@ -109,3 +109,29 @@ jobs:
             -DLLVM_INCLUDE_DOCS=OFF \
             -DTerminfo_LIBRARIES=/usr/lib/$libs_dir/libtinfo.a \
             -DZLIB_LIBRARY=/usr/lib/$libs_dir/libz.a
+
+      - name: build clang
+        run: |
+          cd llvm-project
+          CC="$C_BINARY" CXX="$CXX_BINARY" cmake --build build --target \
+            clang \
+            lld \
+            llvm-ar \
+            llvm-as \
+            llvm-cov \
+            llvm-dwp \
+            llvm-libtool-darwin \
+            llvm-nm \
+            llvm-objcopy \
+            llvm-objdump \
+            llvm-profdata \
+            cxx \
+            cxxabi \
+            unwind \
+            builtins \
+            -j $(nproc)
+
+      - name: package toolchain
+        run: |
+          ls
+

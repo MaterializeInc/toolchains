@@ -20,7 +20,7 @@ jobs:
   build:
     name: build clang x86-64
     env:
-      CLANG_ARCH:"x86-64"
+      CLANG_ARCH: "x86-64"
     runs-on: toolchains-ubuntu-22.04-x86
     steps:
       - name: Install required tools

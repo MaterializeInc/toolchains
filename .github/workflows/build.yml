@@ -35,7 +35,7 @@ jobs:
       - name: Clone llvm-project at Version
         uses: actions/checkout@v4
         with:
-          name: llvm/llvm-project
+          repository: llvm/llvm-project
           ref: 'llvmorg-${{ inputs.clang_version }}'
 
       - name: Get "target cpu"

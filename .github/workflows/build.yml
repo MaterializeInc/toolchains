@@ -93,6 +93,7 @@ jobs:
             -DLLVM_DISTRIBUTION_COMPONENTS="clang-resource-headers" \
             -DCMAKE_C_COMPILER="$C_BINARY" \
             -DCMAKE_CXX_COMPILER="$CXX_BINARY" \
+            -DCMAKE_CXX_STANDARD=17 \
             -DLLVM_USE_LINKER="$LLD_BINARY" \
             -DLLVM_ENABLE_LIBCXX=ON \
             -DLLVM_STATIC_LINK_CXX_STDLIB=ON \
@@ -111,7 +112,7 @@ jobs:
       - name: build clang
         run: |
           cd llvm-project
-          CC="$C_BINARY" CXX="$CXX_BINARY" cmake --build build --target \
+          CC="$C_BINARY" CXX="$CXX_BINARY" LD="$LLD_BINARY" cmake --build build --target \
             clang \
             lld \
             llvm-ar \

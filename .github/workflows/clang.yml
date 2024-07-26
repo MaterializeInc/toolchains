@@ -85,7 +85,6 @@ jobs:
           cd llvm-project
           cmake -S llvm -B build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_VERBOSE_MAKEFILE=ON \
             -DCMAKE_C_FLAGS="$TARGET_CPU_ARG -flto=thin -pthread" \
             -DCMAKE_CXX_FLAGS="$TARGET_CPU_ARG -flto=thin -pthread" \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="on" \
@@ -96,8 +95,6 @@ jobs:
             -DCMAKE_CXX_COMPILER="$CXX_BINARY" \
             -DCMAKE_CXX_STANDARD=17 \
             -DLLVM_USE_LINKER="$LLD_BINARY" \
-            -DLLVM_ENABLE_LIBCXX=ON \
-            -DLLVM_STATIC_LINK_CXX_STDLIB=ON \
             -DLLVM_ENABLE_LTO=Thin \
             -DLLVM_ENABLE_PIC=ON \
             -DLLVM_ENABLE_THREADS=ON \

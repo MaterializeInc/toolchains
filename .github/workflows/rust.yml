@@ -50,6 +50,9 @@ jobs:
             done
           done
 
+      - name: List
+        run: ls
+
       - name: Upload zstd Compressed Artifacts
         uses: actions/upload-artifact@v4
         with:

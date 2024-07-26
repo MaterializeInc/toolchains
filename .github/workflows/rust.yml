@@ -69,7 +69,7 @@ jobs:
       - name: Upload zstd Compressed Artifacts to Release
         uses: svenstaro/upload-release-action@v2
         with:
-          file: "/artifacts/*.tar.zst"
+          file: "artifacts/*.tar.zst"
           file_glob: true
           tag: ${{ env.RELEASE_TAG }}
           overwrite: true

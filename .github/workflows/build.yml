@@ -9,6 +9,12 @@ on:
         description: "Version of clang we'll build."
         type: string
         required: true
+      runner:
+        description: "Type of runner to use/architecture to build for."
+        type: choice
+        options:
+          - toolchains-ubuntu-22.04-x86
+          - toolchains-ubuntu-22.04-arm
       cpu_target:
         description: "Type of CPU to optimize for."
         type: string
@@ -18,10 +24,8 @@ name: Build
 
 jobs:
   build:
-    name: build clang x86-64
-    env:
-      CLANG_ARCH: "x86-64"
-    runs-on: toolchains-ubuntu-22.04-x86
+    name: build clang ${{ inputs.runner }}
+    runs-on: ${{ inputs.runner }}
     steps:
       - name: Install required tools
         run: sudo apt-get install -y zstd cmake
@@ -37,8 +41,9 @@ jobs:
         with:
           repository: llvm/llvm-project
           ref: 'llvmorg-${{ inputs.clang_version }}'
+          path: llvm-project
 
-      - name: Get "target cpu"
+      - name: Get target cpu
         run: |
           TARGET_CPU_ARG=""
           if [ -n ${{ inputs.target_cpu }} ]; then
@@ -46,9 +51,23 @@ jobs:
           fi
           echo $TARGET_CPU_ARG
 
+      - name: Get target arch
+        run: |
+          case ${{ inputs.runner }} in
+            toolchains-ubuntu-22.04-x86)
+              CLANG_ARCH=x86-64
+              ;;
+            toolchains-ubuntu-22.04-arm)
+              CLANG_ARCH=aarch64
+              ;;
+            *)
+              echo "Programming error, unknown runner"
+              exit 1
+              ;;
+
       - name: cmake configure
         run: | 
-          libs_dir="$CLANG_ARG"-linux-gnu
+          libs_dir="$CLANG_ARCH"-linux-gnu
           echo $libs_dir
 
           cd llvm-project

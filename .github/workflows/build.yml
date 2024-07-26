@@ -26,6 +26,9 @@ jobs:
       - name: Install required tools
         run: sudo apt-get install -y zstd cmake
 
+      - name: Clone MaterializeInc/toolchains repo
+        uses: actions/checkout@v4
+
       - name: Install bootstrap clang
         run: sudo clang/llvm.sh ${{ inputs.clang_bootstrap_major_version }}
 

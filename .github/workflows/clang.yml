@@ -82,7 +82,7 @@ jobs:
           LLD_BINARY="lld-${{ inputs.clang_bootstrap_major_version }}"
           echo "LLD_BINARY=$LLD_BINARY" >> $GITHUB_ENV
 
-          RELEASE_TAG="v${{ inputs.clang_version }}"
+          RELEASE_TAG="clang-${{ inputs.clang_version }}"
           if [ -n "${{ inputs.github_tag }}" ]; then
             RELEASE_TAG="${{ inputs.github_tag }}"
           fi
@@ -155,12 +155,13 @@ jobs:
       - name: Upload Toolchain Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "linux_$CLANG_ARCH.tar.zst"
-          path: "linux_$CLANG_ARCH.tar.zst"
+          name: toolchains
+          path: "*.tar.zst"
 
       - name: Upload toolchain to release
         uses: svenstaro/upload-release-action@v2
         with:
-          file: "linux_$CLANG_ARCH.tar.zst"
-          tag: "$RELEASE_TAG"
+          file: "*.tar.zst"
+          file_glob: true
+          tag: ${{ env.RELEASE_TAG }}
           overwrite: true

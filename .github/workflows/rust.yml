@@ -1,0 +1,57 @@
+on:
+  workflow_dispatch:
+    inputs:
+      rust_version:
+        description: "Version of Rust to recompress."
+        type: string
+        required: true
+      runner:
+        description: "Type of runner to use/architecture to build for."
+        type: choice
+        options:
+          - toolchains-ubuntu-22.04-x86
+          - toolchains-ubuntu-22.04-arm
+  
+env:
+  XZ_OPT: "-T0"
+
+name: Rust
+
+jobs:
+  recompress_rust:
+    name: Recompress Rust
+    runs-on: ${{ inputs.runner }}
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        target: ["x86_64-unknown-linux-gnu"]
+    
+    steps:
+      - name: Download Rust Components
+        run: |
+          mkdir downloads
+          mkdir artifacts
+
+          components=("rustc")
+          target=${{ matrix.target }}
+          version=${{ inputs.rust_version }}
+
+          cd downloads
+          for target in "${targets[@]}"; do
+            for component in "${components[@]}"; do
+              tar_name="$component-$version-$target.tar"
+              xz_name="$tar_name.xz"
+
+              wget https://static.rust-lang.org/dist/$xz_name
+              
+              tar -xJf $xz_name
+              tar -cf - $xz_name | zstd --ultra -22 -o "../artifacts/$tar_name.zst"
+
+      - name: Upload zstd Compressed Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: toolchains
+          path: "artifacts/*.tar.zst"
+
+

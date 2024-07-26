@@ -40,13 +40,13 @@ jobs:
           cd downloads
           for target in "${targets[@]}"; do
             for component in "${components[@]}"; do
-              tar_name="$component-$version-$target.tar"
-              xz_name="$tar_name.xz"
+              full_name="$component-$version-$target"
+              xz_name="$full_name.tar.xz"
 
               wget https://static.rust-lang.org/dist/$xz_name
               
               tar -xJf $xz_name
-              tar -cf - $xz_name | zstd --ultra -22 -o "../artifacts/$tar_name.zst"
+              tar -cf - $full_name | zstd --ultra -22 -o "../artifacts/$full_name.tar.zst"
             done
           done
 

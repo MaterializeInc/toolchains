@@ -66,12 +66,6 @@ jobs:
           fi
           echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
 
-      - name: Save zstd Compressed Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: rust-toolchains
-          path: "artifacts/*.tar.zst"
-
       - name: Upload zstd Compressed Artifacts to Release
         uses: svenstaro/upload-release-action@v2
         with:

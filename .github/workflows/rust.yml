@@ -45,7 +45,7 @@ jobs:
           mkdir downloads
           mkdir artifacts
 
-          component={{ matrix.component }}
+          component=${{ matrix.component }}
           target=${{ matrix.target }}
           version=${{ inputs.rust_version }}
 

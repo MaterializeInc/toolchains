@@ -28,7 +28,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
       - name: Install required tools
-        run: sudo apt-get install -y zstd cmake
+        run: sudo apt-get install -y zstd cmake libtinfo
 
       - name: Clone MaterializeInc/toolchains repo
         uses: actions/checkout@v4
@@ -41,6 +41,7 @@ jobs:
         with:
           repository: llvm/llvm-project
           ref: 'llvmorg-${{ inputs.clang_version }}'
+          fetch-depth: 1 # llvm-project is quite large
           path: llvm-project
 
       - name: Get args
@@ -53,7 +54,7 @@ jobs:
 
           case ${{ inputs.runner }} in
             toolchains-ubuntu-22.04-x86)
-              CLANG_ARCH=x86-64
+              CLANG_ARCH=x86_64
               ;;
             toolchains-ubuntu-22.04-arm)
               CLANG_ARCH=aarch64

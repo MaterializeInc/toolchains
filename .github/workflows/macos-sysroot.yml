@@ -19,10 +19,14 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Clone MaterializeInc/toolchains repo
+        uses: actions/checkout@v4
+
       - name: List Available SDKs
         run: |
           ls -lAh /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
           ls -lAh /Applications/Xcode*
+
       - name: Determine Path to SDK
         run: |
           SDK_NAME="MacOSX${{ inputs.macos_sdk_version }}.sdk"
@@ -34,6 +38,7 @@ jobs:
           fi
           echo "SDK_NAME=$SDK_NAME" >> $GITHUB_ENV
           echo "SDK_PATH=$SDK_PATH" >> $GITHUB_ENV
+
       - name: Package SDK
         run: |
           mkdir working

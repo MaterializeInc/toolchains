@@ -46,7 +46,8 @@ jobs:
 
           cp -rP $SDK_PATH/* working/$SDK_NAME
           cat macos-sysroot/remove.txt | while read -r val; do eval rm -v working/$SDK_NAME/$val || true; done
-          tar -cf - working/$SDK_NAME/* | zstd --ultra -22 -o "artifacts/$SDK_NAME.tar.zst"
+          cd working
+          tar -cf - "$SDK_NAME/*" | zstd --ultra -22 -o "../artifacts/$SDK_NAME.tar.zst"
 
       - name: Determine Release Tag
         run: |

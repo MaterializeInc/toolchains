@@ -1,11 +1,15 @@
 clang*
 lld
+ld.lld
+ld64.lld
+lld-link
 llvm-ar
 llvm-as
 llvm-cov
 llvm-dwp
 llvm-libtool-darwin
 llvm-nm
+llvm-objcopy
 llvm-objdump
 llvm-profdata
 llvm-strip

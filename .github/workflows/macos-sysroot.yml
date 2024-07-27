@@ -19,39 +19,43 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Package SDK
+      - name: List Available SDKs
         run: |
           ls -lAh /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
+          ls -lAh /Applications/Xcode*
+      - name: Determine Path to SDK
+        run: |
+          SDK_NAME="MacOSX${{ inputs.macos_sdk_version }}.sdk"
+          SDK_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/$SDK_NAME
 
-        # mkdir downloads
-        # mkdir artifacts
+          if [ ! -d "$SDK_PATH" ]; then
+            echo "$SDK_PATH does not exist."
+            exit 1
+          fi
+          echo "SDK_NAME=$SDK_NAME" >> $GITHUB_ENV
+          echo "SDK_PATH=$SDK_PATH" >> $GITHUB_ENV
+      - name: Package SDK
+        run: |
+          mkdir working
+          mkdir artifacts
 
-        # component=${{ matrix.component }}
-        # target=${{ matrix.target }}
-        # version=${{ inputs.rust_version }}
+          cp -rP $SDK_PATH working/$SDK_NAME
+          cat macos-sysroot/remove.txt | while read -r val; do eval rm -v working/$SDK_NAME/$val; done
+          tar -cf - working/$SDK_NAME | zstd --ultra -22 -o "working/$SDK_NAME.tar.zst"
 
-        # cd downloads
-        # full_name="$component-$version-$target"
-        # xz_name="$full_name.tar.xz"
+      - name: Determine Release Tag
+        run: |
+          RELEASE_TAG="macos-sysroot-sdk-${{ inputs.macos_sdk_version }}"
+          if [ -n "${{ inputs.github_tag }}" ]; then
+            RELEASE_TAG="${{ inputs.github_tag }}"
+          fi
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
 
-        # wget https://static.rust-lang.org/dist/$xz_name
-        
-        # tar -xJf $xz_name
-        # tar -cf - $full_name | zstd --ultra -22 -o "../artifacts/$full_name.tar.zst"
-
-      # - name: Determine Release Tag
-      #   run: |
-      #     RELEASE_TAG="rust-${{ inputs.rust_version }}"
-      #     if [ -n "${{ inputs.github_tag }}" ]; then
-      #       RELEASE_TAG="${{ inputs.github_tag }}"
-      #     fi
-      #     echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
-
-      # - name: Upload zstd Compressed Artifacts to Release
-      #   uses: svenstaro/upload-release-action@v2
-      #   with:
-      #     file: "artifacts/*.tar.zst"
-      #     file_glob: true
-      #     tag: ${{ env.RELEASE_TAG }}
-      #     overwrite: true
+      - name: Upload zstd Compressed Artifacts to Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: "artifacts/*.tar.zst"
+          file_glob: true
+          tag: ${{ env.RELEASE_TAG }}
+          overwrite: true
 

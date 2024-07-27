@@ -1,0 +1,57 @@
+on:
+  workflow_dispatch:
+    inputs:
+      macos_sdk_version:
+        description: "Version of the macOS SDK to package."
+        type: string
+        required: true
+      github_tag:
+        description: "Tag to upload the release to."
+        type: string
+        required: false
+
+name: macOS SDK Sysroot
+
+jobs:
+  package_sdk:
+    name: Package macOS SDK
+    runs-on: macos-14
+    permissions:
+      contents: write
+    steps:
+      - name: Package SDK
+        run: |
+          ls -lAh /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
+
+        # mkdir downloads
+        # mkdir artifacts
+
+        # component=${{ matrix.component }}
+        # target=${{ matrix.target }}
+        # version=${{ inputs.rust_version }}
+
+        # cd downloads
+        # full_name="$component-$version-$target"
+        # xz_name="$full_name.tar.xz"
+
+        # wget https://static.rust-lang.org/dist/$xz_name
+        
+        # tar -xJf $xz_name
+        # tar -cf - $full_name | zstd --ultra -22 -o "../artifacts/$full_name.tar.zst"
+
+      # - name: Determine Release Tag
+      #   run: |
+      #     RELEASE_TAG="rust-${{ inputs.rust_version }}"
+      #     if [ -n "${{ inputs.github_tag }}" ]; then
+      #       RELEASE_TAG="${{ inputs.github_tag }}"
+      #     fi
+      #     echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
+
+      # - name: Upload zstd Compressed Artifacts to Release
+      #   uses: svenstaro/upload-release-action@v2
+      #   with:
+      #     file: "artifacts/*.tar.zst"
+      #     file_glob: true
+      #     tag: ${{ env.RELEASE_TAG }}
+      #     overwrite: true
+

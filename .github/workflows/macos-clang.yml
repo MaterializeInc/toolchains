@@ -1,0 +1,115 @@
+on:
+  workflow_dispatch:
+    inputs:
+      clang_version:
+        description: "Version of clang we'll build."
+        type: string
+        required: true
+      cpu_target:
+        description: "Type of CPU to optimize for."
+        type: string
+        required: false
+      github_tag:
+        description: "Tag to upload the release to."
+        type: string
+        required: false
+
+name: Clang
+
+jobs:
+  build_clang:
+    name: build clang ${{ inputs.runner }}
+    runs-on: ${{ inputs.runner }}
+    permissions:
+      contents: write
+    steps:
+      - name: Clone MaterializeInc/toolchains repo
+        uses: actions/checkout@v4
+
+      - name: Clone llvm-project at Version
+        uses: actions/checkout@v4
+        with:
+          repository: llvm/llvm-project
+          ref: 'llvmorg-${{ inputs.clang_version }}'
+          fetch-depth: 1 # llvm-project is quite large
+          path: llvm-project
+
+      - name: Get args
+        run: |
+          CLANG_ARCH=aarch64
+          echo "CLANG_ARCH=$CLANG_ARCH" >> $GITHUB_ENV
+
+          RELEASE_TAG="clang-${{ inputs.clang_version }}"
+          if [ -n "${{ inputs.github_tag }}" ]; then
+            RELEASE_TAG="${{ inputs.github_tag }}"
+          fi
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
+
+          echo $GITHUB_ENV
+
+      - name: cmake configure
+        # Note: Unlike Linux we don't statically link libstdc++
+        run: | 
+          cd llvm-project
+          cmake -S llvm -B build \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_FLAGS="-flto=thin -pthread" \
+              -DCMAKE_CXX_FLAGS="-flto=thin -pthread" \
+              -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="on" \
+              -DLLVM_ENABLE_PROJECTS="clang;lld" \
+              -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
+              -DLLVM_DISTRIBUTION_COMPONENTS="clang-resource-headers" \
+              -DLLVM_ENABLE_LTO=Thin \
+              -DLLVM_ENABLE_PIC=ON \
+              -DLLVM_ENABLE_THREADS=ON \
+              -DBUILD_SHARED_LIBS=OFF \
+              -DLLVM_INCLUDE_UTILS=OFF \
+              -DLLVM_INCLUDE_TESTS=OFF \
+              -DLLVM_INCLUDE_EXAMPLES=OFF \
+              -DLLVM_INCLUDE_BENCHMARKS=OFF \
+              -DLLVM_INCLUDE_DOCS=OFF
+
+      - name: build clang
+        run: |
+          cd llvm-project
+          cmake --build build --target \
+            clang \
+            lld \
+            llvm-ar \
+            llvm-as \
+            llvm-cov \
+            llvm-dwp \
+            llvm-libtool-darwin \
+            llvm-nm \
+            llvm-objcopy \
+            llvm-objdump \
+            llvm-profdata \
+            cxx \
+            cxxabi \
+            unwind \
+            builtins \
+            -j $(nproc)
+
+      - name: package toolchain
+        run: |
+          mkdir package package/bin package/lib package/include
+          cat clang/bin.txt | while read -r val; do eval cp -rP llvm-project/build/bin/$val package/bin/; done
+          cat clang/include.txt | while read -r val; do eval cp -rP llvm-project/build/include/$val package/include/; done
+          cat clang/lib.txt | while read -r val; do eval cp -rP llvm-project/build/lib/$val package/lib/; done
+
+          cd package
+          tar -cf - * | zstd --ultra -22 -o "../darwin_$CLANG_ARCH.tar.zst"
+
+      - name: Upload Toolchain Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: toolchains
+          path: "*.tar.zst"
+
+      - name: Upload toolchain to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: "*.tar.zst"
+          file_glob: true
+          tag: ${{ env.RELEASE_TAG }}
+          overwrite: true

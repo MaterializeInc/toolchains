@@ -14,7 +14,7 @@ on:
         type: string
         required: false
 
-name: Clang
+name: macOS Clang
 
 jobs:
   build_clang:

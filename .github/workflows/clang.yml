@@ -24,7 +24,7 @@ on:
         type: string
         required: false
 
-name: Clang
+name: Linux Clang
 
 jobs:
   build_clang:

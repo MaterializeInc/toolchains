@@ -18,8 +18,8 @@ name: macOS Clang
 
 jobs:
   build_clang:
-    name: build clang ${{ inputs.runner }}
-    runs-on: ${{ inputs.runner }}
+    name: build clang macOS
+    runs-on: macos-latest
     permissions:
       contents: write
     steps:

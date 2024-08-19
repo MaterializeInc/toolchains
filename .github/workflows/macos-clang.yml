@@ -38,6 +38,7 @@ jobs:
         run: |
           CLANG_ARCH=aarch64
           echo "CLANG_ARCH=$CLANG_ARCH" >> $GITHUB_ENV
+          echo "CLANG_TARGET=$CLANG_ARCH-apple-darwin" >> $GITHUB_ENV
 
           RELEASE_TAG="clang-${{ inputs.clang_version }}"
           if [ -n "${{ inputs.github_tag }}" ]; then

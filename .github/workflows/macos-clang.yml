@@ -19,7 +19,7 @@ name: macOS Clang
 jobs:
   build_clang:
     name: build clang macOS
-    runs-on: macos-latest
+    runs-on: macos-latest-xlarge
     permissions:
       contents: write
     steps:

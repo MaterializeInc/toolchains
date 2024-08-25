@@ -55,9 +55,14 @@ jobs:
         run: |
           mkdir package package/bin package/lib package/include
           
-          cat clang/bin.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval echo llvm-project/build/bin/$val ; done
-          cat clang/include.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval echo llvm-project/build/include/$val ; done
-          cat clang/lib.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval echo llvm-project/build/lib/$val ; done
+          for dir in include bin lib; do
+            cat clang/$dir.txt | while read -r val; do 
+              val=${val#mac:}
+              if [[ $val != linux* && -n $val ]]; then
+                eval echo llvm-project/build/$dir/$val
+              fi
+            done
+          done
 
           which tar
           which zstd

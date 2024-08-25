@@ -146,9 +146,9 @@ jobs:
       - name: package toolchain
         run: |
           mkdir package package/bin package/lib package/include
-          cat clang/bin.txt | while read -r val; do val=${val#linux}; [[ -n $val ]] && eval cp -rP llvm-project/build/bin/$val package/bin/; done
-          cat clang/include.txt | while read -r val; do val=${val#linux}; [[ -n $val ]] && eval cp -rP llvm-project/build/include/$val package/include/; done
-          cat clang/lib.txt | while read -r val; do val=${val#linux}; [[ -n $val ]] && eval cp -rP llvm-project/build/lib/$val package/lib/; done
+          cat clang/bin.txt | while read -r val; do val=${val#linux:}; [[ $val != mac* ]] && [[ -n $val ]] && eval cp -rP llvm-project/build/bin/$val package/bin/; done
+          cat clang/include.txt | while read -r val; do val=${val#linux:}; [[ $val != mac* ]] && [[ -n $val ]] && eval cp -rP llvm-project/build/include/$val package/include/; done
+          cat clang/lib.txt | while read -r val; do val=${val#linux:}; [[ $val != mac* ]] && [[ -n $val ]] && eval cp -rP llvm-project/build/lib/$val package/lib/; done
 
           cd package
           tar -cf - * | zstd --ultra -22 -o "../linux_$CLANG_ARCH.tar.zst"

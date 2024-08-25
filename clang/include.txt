@@ -1,2 +1,2 @@
 c++
-$CLANG_TARGET
+linux$CLANG_TARGET

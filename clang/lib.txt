@@ -1,2 +1,14 @@
 clang
-$CLANG_TARGET
+libc++.1.0.dylib
+libc++.1.dylib
+libc++.a
+libc++.dylib
+libc++abi.1.0.dylib
+libc++abi.1.dylib
+libc++abi.a
+libc++abi.dylib
+libunwind.1.0.dylib
+libunwind.1.dylib
+libunwind.a
+libunwind.dylib
+linux$CLANG_TARGET

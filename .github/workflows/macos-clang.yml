@@ -23,6 +23,9 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Install required tools
+        run: brew install ninja
+
       - name: Clone MaterializeInc/toolchains repo
         uses: actions/checkout@v4
 
@@ -52,7 +55,7 @@ jobs:
         # Note: Unlike Linux we don't statically link libstdc++
         run: | 
           cd llvm-project
-          cmake -S llvm -B build \
+          cmake -G Ninja -S llvm -B build \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_C_FLAGS="-flto=thin -pthread" \
               -DCMAKE_CXX_FLAGS="-flto=thin -pthread" \
@@ -85,18 +88,19 @@ jobs:
             llvm-objcopy \
             llvm-objdump \
             llvm-profdata \
+            llvm-strip \
+            llvm-ranlib \
             cxx \
             cxxabi \
             unwind \
-            builtins \
-            -j $(nproc)
+            builtins
 
       - name: package toolchain
         run: |
           mkdir package package/bin package/lib package/include
-          cat clang/bin.txt | while read -r val; do eval cp -rP llvm-project/build/bin/$val package/bin/; done
-          cat clang/include.txt | while read -r val; do eval cp -rP llvm-project/build/include/$val package/include/; done
-          cat clang/lib.txt | while read -r val; do eval cp -rP llvm-project/build/lib/$val package/lib/; done
+          cat clang/bin.txt | while read -r val; do [[ $val != linux* ]] && eval cp -rP llvm-project/build/bin/$val package/bin/; done
+          cat clang/include.txt | while read -r val; do [[ $val != linux* ]] && eval cp -rP llvm-project/build/include/$val package/include/; done
+          cat clang/lib.txt | while read -r val; do [[ $val != linux* ]] && eval cp -rP llvm-project/build/lib/$val package/lib/; done
 
           cd package
           tar -cf - * | zstd --ultra -22 -o "../darwin_$CLANG_ARCH.tar.zst"

@@ -34,7 +34,7 @@ jobs:
       contents: write
     steps:
       - name: Install required tools
-        run: sudo apt-get install -y zstd cmake gcc
+        run: sudo apt-get install -y zstd cmake gcc ninja
 
       - name: Clone MaterializeInc/toolchains repo
         uses: actions/checkout@v4
@@ -96,7 +96,7 @@ jobs:
           echo $libs_dir
 
           cd llvm-project
-          cmake -S llvm -B build \
+          cmake -G Ninja -S llvm -B build \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_FLAGS="$TARGET_CPU_ARG -flto=thin -pthread" \
             -DCMAKE_CXX_FLAGS="$TARGET_CPU_ARG -flto=thin -pthread" \
@@ -136,18 +136,19 @@ jobs:
             llvm-objcopy \
             llvm-objdump \
             llvm-profdata \
+            llvm-strip \
+            llvm-ranlib \
             cxx \
             cxxabi \
             unwind \
-            builtins \
-            -j $(nproc)
+            builtins
 
       - name: package toolchain
         run: |
           mkdir package package/bin package/lib package/include
-          cat clang/bin.txt | while read -r val; do eval cp -rP llvm-project/build/bin/$val package/bin/; done
-          cat clang/include.txt | while read -r val; do eval cp -rP llvm-project/build/include/$val package/include/; done
-          cat clang/lib.txt | while read -r val; do eval cp -rP llvm-project/build/lib/$val package/lib/; done
+          cat clang/bin.txt | while read -r val; do val=${val#linux}; eval cp -rP llvm-project/build/bin/$val package/bin/; done
+          cat clang/include.txt | while read -r val; do val=${val#linux}; eval cp -rP llvm-project/build/include/$val package/include/; done
+          cat clang/lib.txt | while read -r val; do val=${val#linux}; eval cp -rP llvm-project/build/lib/$val package/lib/; done
 
           cd package
           tar -cf - * | zstd --ultra -22 -o "../linux_$CLANG_ARCH.tar.zst"

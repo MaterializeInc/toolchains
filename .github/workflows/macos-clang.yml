@@ -51,6 +51,17 @@ jobs:
 
           echo $GITHUB_ENV
 
+      - name: Debugging
+        run: |
+          mkdir package package/bin package/lib package/include
+          
+          cat clang/bin.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval echo llvm-project/build/bin/$val ; done
+          cat clang/include.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval echo llvm-project/build/include/$val ; done
+          cat clang/lib.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval echo llvm-project/build/lib/$val ; done
+
+          which tar
+          which zstd
+
       - name: cmake configure
         # Note: Unlike Linux we don't statically link libstdc++
         run: | 
@@ -98,7 +109,6 @@ jobs:
       - name: package toolchain
         run: |
           mkdir package package/bin package/lib package/include
-          cat clang/bin.txt
 
           cat clang/bin.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval cp -rP llvm-project/build/bin/$val package/bin/; done
           cat clang/include.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval cp -rP llvm-project/build/include/$val package/include/; done

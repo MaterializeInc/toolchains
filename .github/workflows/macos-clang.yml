@@ -24,7 +24,7 @@ jobs:
       contents: write
     steps:
       - name: Install required tools
-        run: brew install ninja
+        run: brew install ninja zstd
 
       - name: Clone MaterializeInc/toolchains repo
         uses: actions/checkout@v4
@@ -98,6 +98,8 @@ jobs:
       - name: package toolchain
         run: |
           mkdir package package/bin package/lib package/include
+          cat clang/bin.txt
+
           cat clang/bin.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval cp -rP llvm-project/build/bin/$val package/bin/; done
           cat clang/include.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval cp -rP llvm-project/build/include/$val package/include/; done
           cat clang/lib.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval cp -rP llvm-project/build/lib/$val package/lib/; done

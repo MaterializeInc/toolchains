@@ -50,23 +50,7 @@ jobs:
           echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
 
           echo $GITHUB_ENV
-
-      - name: Debugging
-        run: |
-          mkdir package package/bin package/lib package/include
-          
-          for dir in include bin lib; do
-            cat clang/$dir.txt | while read -r val; do 
-              val=${val#mac:}
-              if [[ $val != linux* && -n $val ]]; then
-                eval echo llvm-project/build/$dir/$val
-              fi
-            done
-          done
-
-          which tar
-          which zstd
-
+    
       - name: cmake configure
         # Note: Unlike Linux we don't statically link libstdc++
         run: | 
@@ -113,11 +97,17 @@ jobs:
 
       - name: package toolchain
         run: |
-          mkdir package package/bin package/lib package/include
+          mkdir package 
 
-          cat clang/bin.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval cp -rP llvm-project/build/bin/$val package/bin/; done
-          cat clang/include.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval cp -rP llvm-project/build/include/$val package/include/; done
-          cat clang/lib.txt | while read -r val; do val=${val#mac:}; [[ $val != linux* ]] && [[ -n $val ]] && eval cp -rP llvm-project/build/lib/$val package/lib/; done
+          for dir in bin include lib; do
+            mkdir package/$dir
+            cat clang/$dir.txt | while read -r val; do 
+              val=${val#mac:}
+              if [[ $val != linux* && -n $val ]]; then
+                eval cp -rP llvm-project/build/$dir/$val package/$dir/
+              fi
+            done
+          done
 
           cd package
           tar -cf - * | zstd --ultra -22 -o "../darwin_$CLANG_ARCH.tar.zst"

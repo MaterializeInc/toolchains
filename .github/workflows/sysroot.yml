@@ -1,0 +1,88 @@
+on:
+  workflow_dispatch:
+    inputs:
+      kernel_version:
+        description: "Version of Linux Kernel Headers."
+        type: string
+        required: true
+      glibc_version:
+        description: "Version of glibc."
+        type: string
+        required: true
+      libstdcxx_version:
+        description: "Version of libstdc++"
+        type: string
+        required: true
+      arch:
+        description: "Architecture to Build"
+        type: choice
+        options:
+        - x86_64
+        - aarch64
+      github_tag:
+        description: "Tag to upload the release to."
+        type: string
+        required: false
+  
+name: Linux Sysroot
+
+jobs:
+  build_sysroot:
+    name: build sysroot ${{ inputs.arch }}
+    runs-on: toolchains-ubuntu-22.04-x86
+    permissions:
+      contents: write
+    steps:
+      - name: Clone MaterializeInc/toolchains repo
+        uses: actions/checkout@v4
+
+      - name: Get args
+        run: |
+          KERNEL_TAG=$(tr '.' '_' <<< ${{ inputs.kernel_version }})
+          echo "KERNEL_TAG=$KERNEL_TAG" >> $GITHUB_ENV
+          GLIBC_TAG=$(tr '.' '_' <<< ${{ inputs.glibc_version }})
+          echo "GLIBC_TAG=$GLIBC_TAG" >> $GITHUB_ENV
+          LIBSTDCXX_TAG=$(tr '.' '_' <<< ${{ inputs.libstdcxx_version }})
+          echo "LIBSTDCXX_TAG=$LIBSTDCXX_TAG" >> $GITHUB_ENV
+
+          GITHUB_TAG=$(tr '[:upper:]' '[:lower:]' <<< "sysroot-$KERNEL_TAG-$GLIBC_TAG-$LIBSTDCXX_TAG")
+          echo "GITHUB_TAG=$GITHUB_TAG" >> $GITHUB_ENV
+          DOCKER_IMAGE_TAG=$(tr '[:upper:]' '[:lower:]' <<< "sysroot-$GITHUB_TAG-${{ inputs.arch }}")
+          echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Build Sysroot in Docker
+        run: |
+          cd toolchains
+          docker build \
+            --build-arg ARCH="${{ inputs.arch }}" \
+            --build-arg KERNEL_VERSION="${{ inputs.kernel_version }}" \
+            --build-arg GLIBC_VERSION="${{ inputs.glibc_version }}" \
+            --build-arg LIBSTDCXX_VERSION="${{ inputs.libstdcxx_verion }}" \
+            --tag "$DOCKER_IMAGE_TAG" \
+            --target "sysroot_$GITHUB_TAG"
+
+      - name: Package Sysroot
+        run: |
+          mkdir sysroot
+          
+          container_id="$(docker create $DOCKER_IMAGE_TAG)"
+          docker cp "$container_id:/var/builds/sysroot" sysroot
+
+          cd sysroot
+          tar -cf - * | zstd --ultra -22 -o "../linux-$GITHUB_TAG.tar.zst"
+      
+      - name: Determine Release Tag
+        run: |
+          RELEASE_TAG="linux-$GITHUB_TAG"
+          if [ -n "${{ inputs.github_tag }}" ]; then
+            RELEASE_TAG="${{ inputs.github_tag }}"
+          fi
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
+
+      - name: Upload Artifacts to Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: "sysroot/*.tar.zst"
+          file_glob: true
+          tag: ${{ env.RELEASE_TAG }}
+          overwrite: true

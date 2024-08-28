@@ -61,21 +61,21 @@ ARG KERNEL_VERSION
 ENV KERNEL_VERSION="${KERNEL_VERSION}"
 
 WORKDIR /downloads/kernel
-RUN curl --fail-early --location https://github.com/torvalds/linux/archive/refs/tags/v$KERNEL_VERSION.tar.gz \
+RUN curl --fail-early --location "https://github.com/torvalds/linux/archive/refs/tags/v${KERNEL_VERSION}.tar.gz" \
         | tar --gzip --extract --strip-components=1 --file -
 
 FROM base_image AS glibc_download
 ARG GLIBC_VERSION
 ENV GLIBC_VERSION="${GLIBC_VERSION}"
 WORKDIR /downloads/glibc
-RUN curl --fail-early --location https://ftp.gnu.org/gnu/glibc/glibc-$GLIBC_VERSION.tar.xz \
+RUN curl --fail-early --location "https://ftp.gnu.org/gnu/glibc/glibc-${GLIBC_VERSION}.tar.xz" \
         | tar --xz --extract --strip-components=1 --file -
 
 FROM base_image AS gcc_download
 ARG LIBSTDCXX_VERSION
 ENV LIBSTDCXX_VERSION="${LIBSTDCXX_VERSION}"
 WORKDIR /downloads/gcc
-RUN curl --fail-early --location https://ftp.gnu.org/gnu/gcc/gcc-$LIBSTDCXX_VERSION/gcc-$LIBSTDCXX_VERSION.tar.xz \
+RUN curl --fail-early --location "https://ftp.gnu.org/gnu/gcc/gcc-${LIBSTDCXX_VERSION}/gcc-${LIBSTDCXX_VERSION}.tar.xz" \
         | tar --xz --extract --strip-components=1 --file -
 RUN ./contrib/download_prerequisites
 

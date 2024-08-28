@@ -57,9 +57,10 @@ jobs:
             --build-arg ARCH="${{ inputs.arch }}" \
             --build-arg KERNEL_VERSION="${{ inputs.kernel_version }}" \
             --build-arg GLIBC_VERSION="${{ inputs.glibc_version }}" \
-            --build-arg LIBSTDCXX_VERSION="${{ inputs.libstdcxx_verion }}" \
+            --build-arg LIBSTDCXX_VERSION="${{ inputs.libstdcxx_version }}" \
             --tag "$DOCKER_IMAGE_TAG" \
-            --target "sysroot_$GITHUB_TAG"
+            --target sysroot_base \
+            .
 
       - name: Package Sysroot
         run: |

@@ -52,6 +52,7 @@ jobs:
 
       - name: Build Sysroot in Docker
         run: |
+          ls
           cd toolchains
           docker build \
             --build-arg ARCH="${{ inputs.arch }}" \

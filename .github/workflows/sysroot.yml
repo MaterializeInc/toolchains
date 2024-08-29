@@ -50,6 +50,10 @@ jobs:
           DOCKER_IMAGE_TAG=$(tr '[:upper:]' '[:lower:]' <<< "sysroot-$GITHUB_TAG-${{ inputs.arch }}")
           echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
 
+          libstd_version=${{ inputs.libstdcxx_version }}
+          LIBSTDCXX_MAJOR="${libstd_version%%.*}"
+          echo "LIBSTDCXX_MAJOR=$LIBSTDCXX_MAJOR" >> $GITHUB_ENV
+
       - name: Build Sysroot in Docker
         run: |
           cd sysroot
@@ -58,6 +62,7 @@ jobs:
             --build-arg KERNEL_VERSION="${{ inputs.kernel_version }}" \
             --build-arg GLIBC_VERSION="${{ inputs.glibc_version }}" \
             --build-arg LIBSTDCXX_VERSION="${{ inputs.libstdcxx_version }}" \
+            --build-arg LIBSTDCXX_MAJOR="${{ env.LIBSTDCXX_MAJOR }}" \
             --tag "$DOCKER_IMAGE_TAG" \
             --target sysroot_base \
             .

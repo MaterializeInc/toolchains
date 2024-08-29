@@ -74,6 +74,8 @@ RUN curl --fail-early --location "https://ftp.gnu.org/gnu/glibc/glibc-${GLIBC_VE
 FROM base_image AS gcc_download
 ARG LIBSTDCXX_VERSION
 ENV LIBSTDCXX_VERSION="${LIBSTDCXX_VERSION}"
+ARG LIBSTDCXX_MAJOR
+ENV LIBSTDCXX_MAJOR="${LIBSTDCXX_MAJOR}"
 WORKDIR /downloads/gcc
 RUN curl --fail-early --location "https://ftp.gnu.org/gnu/gcc/gcc-${LIBSTDCXX_VERSION}/gcc-${LIBSTDCXX_VERSION}.tar.xz" \
         | tar --xz --extract --strip-components=1 --file -

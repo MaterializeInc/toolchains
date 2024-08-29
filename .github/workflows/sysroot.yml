@@ -52,23 +52,24 @@ jobs:
 
       - name: Build Sysroot in Docker
         run: |
-          cd toolchains
+          cd sysroot
           docker build \
             --build-arg ARCH="${{ inputs.arch }}" \
             --build-arg KERNEL_VERSION="${{ inputs.kernel_version }}" \
             --build-arg GLIBC_VERSION="${{ inputs.glibc_version }}" \
-            --build-arg LIBSTDCXX_VERSION="${{ inputs.libstdcxx_verion }}" \
+            --build-arg LIBSTDCXX_VERSION="${{ inputs.libstdcxx_version }}" \
             --tag "$DOCKER_IMAGE_TAG" \
-            --target "sysroot_$GITHUB_TAG"
+            --target sysroot_base \
+            .
 
       - name: Package Sysroot
         run: |
-          mkdir sysroot
+          mkdir artifacts
           
           container_id="$(docker create $DOCKER_IMAGE_TAG)"
-          docker cp "$container_id:/var/builds/sysroot" sysroot
+          docker cp "$container_id:/var/builds/sysroot" artifacts
 
-          cd sysroot
+          cd artifacts
           tar -cf - * | zstd --ultra -22 -o "../linux-$GITHUB_TAG.tar.zst"
       
       - name: Determine Release Tag
@@ -82,7 +83,7 @@ jobs:
       - name: Upload Artifacts to Release
         uses: svenstaro/upload-release-action@v2
         with:
-          file: "sysroot/*.tar.zst"
+          file: "linux-sysroot*.tar.zst"
           file_glob: true
           tag: ${{ env.RELEASE_TAG }}
           overwrite: true

@@ -28,7 +28,7 @@
 # to support generating Linux sysroot packages via GitHub actions.
 #
 
-FROM ubuntu:22.04 AS base_image
+FROM ubuntu:24.04 AS base_image
 
 WORKDIR /bin
 SHELL ["/bin/bash", "-c"]
@@ -61,34 +61,34 @@ ARG KERNEL_VERSION
 ENV KERNEL_VERSION="${KERNEL_VERSION}"
 
 WORKDIR /downloads/kernel
-RUN curl --fail-early --location https://github.com/torvalds/linux/archive/refs/tags/v$KERNEL_VERSION.tar.gz \
+RUN curl --fail-early --location "https://github.com/torvalds/linux/archive/refs/tags/v${KERNEL_VERSION}.tar.gz" \
         | tar --gzip --extract --strip-components=1 --file -
 
 FROM base_image AS glibc_download
 ARG GLIBC_VERSION
 ENV GLIBC_VERSION="${GLIBC_VERSION}"
 WORKDIR /downloads/glibc
-RUN curl --fail-early --location https://ftp.gnu.org/gnu/glibc/glibc-$GLIBC_VERSION.tar.xz \
+RUN curl --fail-early --location "https://ftp.gnu.org/gnu/glibc/glibc-${GLIBC_VERSION}.tar.xz" \
         | tar --xz --extract --strip-components=1 --file -
 
 FROM base_image AS gcc_download
 ARG LIBSTDCXX_VERSION
 ENV LIBSTDCXX_VERSION="${LIBSTDCXX_VERSION}"
 WORKDIR /downloads/gcc
-RUN curl --fail-early --location https://ftp.gnu.org/gnu/gcc/gcc-$LIBSTDCXX_VERSION/gcc-$LIBSTDCXX_VERSION.tar.xz \
+RUN curl --fail-early --location "https://ftp.gnu.org/gnu/gcc/gcc-${LIBSTDCXX_VERSION}/gcc-${LIBSTDCXX_VERSION}.tar.xz" \
         | tar --xz --extract --strip-components=1 --file -
 RUN ./contrib/download_prerequisites
 
 FROM base_image AS build_image
 
 WORKDIR /opt/gcc/aarch64
-RUN curl --fail-early --location https://toolchains.bootlin.com/downloads/releases/toolchains/aarch64/tarballs/aarch64--glibc--stable-2022.08-1.tar.bz2 \
+RUN curl --fail-early --location https://toolchains.bootlin.com/downloads/releases/toolchains/aarch64/tarballs/aarch64--glibc--stable-2024.02-1.tar.bz2 \
         | tar --bzip --extract --strip-components=1 --file -
 WORKDIR /opt/gcc/aarch64/bin
 RUN --mount=source=create_symlinks.sh,target=/usr/bin/create_symlinks.sh create_symlinks.sh arm-linux- arm-linux-gnueabihf-
 
 WORKDIR /opt/gcc/x86_64
-RUN curl --fail-early --location https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64-core-i7/tarballs/x86-64-core-i7--glibc--stable-2022.08-1.tar.bz2 \
+RUN curl --fail-early --location https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2024.02-1.tar.bz2 \
         | tar --bzip --extract --strip-components=1 --file -
 WORKDIR /opt/gcc/x86_64/bin
 RUN --mount=source=create_symlinks.sh,target=/usr/bin/create_symlinks.sh create_symlinks.sh x86_64-linux-
@@ -142,6 +142,7 @@ RUN --mount=source=configure.sh,target=/usr/bin/configure.sh IS_GCC_BUILD=1 conf
         --enable-default-pie \
         --enable-languages=c,c++,fortran \
         --disable-multilib \
+        --disable-libsanitizer \
         --prefix=/var/buildlibs/gcc \
         --enable-libstdcxx-threads \
         --with-build-sysroot=/var/builds/sysroot \

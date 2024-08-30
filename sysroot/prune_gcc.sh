@@ -2,6 +2,9 @@
 
 set -eux
 
+LIBSTDCXX_VERSION=$1
+LIBSTDCXX_MAJOR=$2
+
 rm -rf /var/buildlibs/gcc/bin
 rm -rf /var/buildlibs/gcc/usr/bin
 rm -rf /var/buildlibs/gcc/libexec

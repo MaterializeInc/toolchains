@@ -80,6 +80,7 @@ WORKDIR /downloads/gcc
 RUN curl --fail-early --location "https://ftp.gnu.org/gnu/gcc/gcc-${LIBSTDCXX_VERSION}/gcc-${LIBSTDCXX_VERSION}.tar.xz" \
         | tar --xz --extract --strip-components=1 --file -
 RUN ./contrib/download_prerequisites
+RUN --mount=source=echo_test.sh,target=/usr/bin/echo_test.sh echo_test.sh
 
 FROM base_image AS build_image
 
@@ -161,7 +162,7 @@ RUN make install all-target-libgfortran
 RUN make install all-target-libstdc++-v3
 
 FROM gcc as gcc_pruned
-RUN --mount=source=prune_gcc.sh,target=/usr/bin/prune_gcc.sh prune_gcc.sh
+RUN --mount=source=prune_gcc.sh,target=/usr/bin/prune_gcc.sh prune_gcc.sh "${LIBSTDCXX_VERSION}" "${LIBSTDCXX_MAJOR}"
 
 ####################################################################################################
 # Assemble final sysroots

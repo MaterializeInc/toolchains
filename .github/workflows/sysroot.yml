@@ -75,7 +75,7 @@ jobs:
           docker cp "$container_id:/var/builds/sysroot" artifacts
 
           cd artifacts
-          tar -cf - * | zstd --ultra -22 -o "../linux-$GITHUB_TAG.tar.zst"
+          tar -cf - * | zstd --ultra -22 -o "../linux-sysroot-${{ inputs.arch }}.tar.zst"
       
       - name: Determine Release Tag
         run: |

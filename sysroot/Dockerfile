@@ -28,7 +28,7 @@
 # to support generating Linux sysroot packages via GitHub actions.
 #
 
-FROM ubuntu:24.04 AS base_image
+FROM ubuntu:22.04 AS base_image
 
 WORKDIR /bin
 SHELL ["/bin/bash", "-c"]
@@ -84,13 +84,13 @@ RUN ./contrib/download_prerequisites
 FROM base_image AS build_image
 
 WORKDIR /opt/gcc/aarch64
-RUN curl --fail-early --location https://toolchains.bootlin.com/downloads/releases/toolchains/aarch64/tarballs/aarch64--glibc--stable-2024.02-1.tar.bz2 \
+RUN curl --fail-early --location https://toolchains.bootlin.com/downloads/releases/toolchains/aarch64/tarballs/aarch64--glibc--stable-2022.08-1.tar.bz2 \
         | tar --bzip --extract --strip-components=1 --file -
 WORKDIR /opt/gcc/aarch64/bin
 RUN --mount=source=create_symlinks.sh,target=/usr/bin/create_symlinks.sh create_symlinks.sh arm-linux- arm-linux-gnueabihf-
 
 WORKDIR /opt/gcc/x86_64
-RUN curl --fail-early --location https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2024.02-1.tar.bz2 \
+RUN curl --fail-early --location https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2022.08-1.tar.bz2 \
         | tar --bzip --extract --strip-components=1 --file -
 WORKDIR /opt/gcc/x86_64/bin
 RUN --mount=source=create_symlinks.sh,target=/usr/bin/create_symlinks.sh create_symlinks.sh x86_64-linux-

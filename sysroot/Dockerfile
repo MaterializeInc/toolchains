@@ -162,7 +162,7 @@ RUN make install all-target-libgfortran
 RUN make install all-target-libstdc++-v3
 
 FROM gcc as gcc_pruned
-RUN --mount=source=prune_gcc.sh,target=/usr/bin/prune_gcc.sh prune_gcc.sh "${LIBSTDCXX_VERSION}" "${LIBSTDCXX_MAJOR}"
+RUN --mount=source=prune_gcc.sh,target=/usr/bin/prune_gcc.sh prune_gcc.sh
 
 ####################################################################################################
 # Assemble final sysroots

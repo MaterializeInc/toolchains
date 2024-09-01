@@ -143,9 +143,20 @@ jobs:
             unwind \
             builtins
 
+      # Package the toolchain by copying everything listed from the following files:
+      #
+      #  * bin.txt
+      #  * include.txt
+      #  * lib.txt
+      #
+      # Note: There is a header file `__config_site` that gets generated in a platform specific
+      # directory but to support cross compiling we move it into the normal `include` dir. This is
+      # bit hacky, but I've manually confirmed the file is the same for both architectures.
       - name: package toolchain
         run: |
           mkdir package
+
+          mv llvm-project/build/include/$CLANG_TARGET/c++/v1/__config_site llvm-project/build/include/c++/v1/__config_site
 
           for dir in bin include lib; do
             mkdir package/$dir
@@ -159,12 +170,6 @@ jobs:
 
           cd package
           tar -cf - * | zstd --ultra -22 -o "../linux_$CLANG_ARCH.tar.zst"
-
-      - name: Upload Toolchain Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: toolchains
-          path: "*.tar.zst"
 
       - name: Upload toolchain to release
         uses: svenstaro/upload-release-action@v2

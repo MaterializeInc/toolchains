@@ -80,7 +80,6 @@ WORKDIR /downloads/gcc
 RUN curl --fail-early --location "https://ftp.gnu.org/gnu/gcc/gcc-${LIBSTDCXX_VERSION}/gcc-${LIBSTDCXX_VERSION}.tar.xz" \
         | tar --xz --extract --strip-components=1 --file -
 RUN ./contrib/download_prerequisites
-RUN --mount=source=echo_test.sh,target=/usr/bin/echo_test.sh echo_test.sh
 
 FROM base_image AS build_image
 

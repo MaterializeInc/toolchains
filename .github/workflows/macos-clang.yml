@@ -66,6 +66,7 @@ jobs:
               -DLLVM_ENABLE_LTO=Thin \
               -DLLVM_ENABLE_PIC=ON \
               -DLLVM_ENABLE_THREADS=ON \
+              -DLLVM_ENABLE_ZLIB=FORCE_ON \
               -DBUILD_SHARED_LIBS=OFF \
               -DLLVM_INCLUDE_UTILS=OFF \
               -DLLVM_INCLUDE_TESTS=OFF \

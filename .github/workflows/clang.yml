@@ -73,6 +73,11 @@ jobs:
           echo "CLANG_ARCH=$CLANG_ARCH" >> $GITHUB_ENV
           echo "CLANG_TARGET=$CLANG_ARCH-unknown-linux-gnu" >> $GITHUB_ENV
 
+          CLANG_VERSION=${{ inputs.clang_version }}
+          CLANG_MAJOR_MINOR_VERSION=$(echo "$CLANG_VERSION" | cut -d. -f1-2)
+          echo "CLANG_VERSION=$CLANG_VERSION" >> $GITHUB_ENV
+          echo "CLANG_MAJOR_MINOR_VERSION=$CLANG_MAJOR_MINOR_VERSION" >> $GITHUB_ENV
+
           C_BINARY="clang-${{ inputs.clang_bootstrap_major_version }}"
           echo "C_BINARY=$C_BINARY" >> $GITHUB_ENV
 
@@ -103,7 +108,7 @@ jobs:
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="on" \
             -DLLVM_ENABLE_PROJECTS="clang;lld" \
             -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
-            -DLLVM_DISTRIBUTION_COMPONENTS="clang-resource-headers" \
+            -DLLVM_DISTRIBUTION_COMPONENTS="clang-resource-headers;libclang" \
             -DCMAKE_C_COMPILER="$C_BINARY" \
             -DCMAKE_CXX_COMPILER="$CXX_BINARY" \
             -DCMAKE_CXX_STANDARD=17 \
@@ -142,7 +147,8 @@ jobs:
             cxx \
             cxxabi \
             unwind \
-            builtins
+            builtins \
+            libclang
 
       # Package the toolchain by copying everything listed from the following files:
       #

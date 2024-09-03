@@ -120,7 +120,7 @@ jobs:
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="on" \
             -DLLVM_ENABLE_PROJECTS="clang;lld" \
             -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
-            -DLLVM_DISTRIBUTION_COMPONENTS="clang-resource-headers;libclang" \
+            -DLLVM_DISTRIBUTION_COMPONENTS="clang-resource-headers" \
             -DCMAKE_C_COMPILER="$C_BINARY" \
             -DCMAKE_CXX_COMPILER="$CXX_BINARY" \
             -DCMAKE_CXX_STANDARD=17 \
@@ -159,8 +159,7 @@ jobs:
             cxx \
             cxxabi \
             unwind \
-            builtins \
-            libclang
+            builtins
 
       # Package the toolchain by copying everything listed from the following files:
       #

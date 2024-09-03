@@ -1,7 +1,4 @@
 clang
-libclang.so
-libclang.so.$CLANG_MAJOR_MINOR_VERSION
-libclang.so.$CLANG_VERSION
 mac:libc++.1.0.dylib
 mac:libc++.1.dylib
 mac:libc++.a

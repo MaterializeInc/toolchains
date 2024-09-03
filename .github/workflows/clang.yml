@@ -16,7 +16,11 @@ on:
           - toolchains-ubuntu-22.04-x86
           - toolchains-ubuntu-22.04-arm
       cpu_target:
-        description: "Type of CPU to optimize for."
+        description: "Type of CPU to optimize for. (-mcpu)"
+        type: string
+        required: false
+      arch_target:
+        description: "Type of micro architecture to optimize for. (-march)"
         type: string
         required: false
       github_tag:
@@ -52,11 +56,19 @@ jobs:
 
       - name: Get args
         run: |
+          TARGET_CPU=${{ inputs.cpu_target }}
           TARGET_CPU_ARG=""
-          if [ -n "${{ inputs.target_cpu }}" ]; then
-            TARGET_CPU_ARG="-mcpu=${{ inputs.target_cpu }}"
+          if [ -n "$TARGET_CPU" ]; then
+            TARGET_CPU_ARG="-mcpu=$TARGET_CPU"
           fi
           echo "TARGET_CPU_ARG=$TARGET_CPU_ARG" >> $GITHUB_ENV
+
+          TARGET_ARCH=${{ inputs.arch_target }}
+          TARGET_ARCH_ARG=""
+          if [ -n "$TARGET_ARCH" ]; then
+            TARGET_ARCH_ARG="-march=$TARGET_ARCH"
+          fi
+            echo "TARGET_ARCH_ARG=$TARGET_ARCH_ARG" >> $GITHUB_ENV
 
           case ${{ inputs.runner }} in
             toolchains-ubuntu-22.04-x86)
@@ -103,8 +115,8 @@ jobs:
           cd llvm-project
           cmake -G Ninja -S llvm -B build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_FLAGS="$TARGET_CPU_ARG -flto=thin -pthread" \
-            -DCMAKE_CXX_FLAGS="$TARGET_CPU_ARG -flto=thin -pthread" \
+            -DCMAKE_C_FLAGS="$TARGET_CPU_ARG $TARGET_ARCH_ARG -flto=thin -pthread -fPIC -O3 -DNDEBUG" \
+            -DCMAKE_CXX_FLAGS="$TARGET_CPU_ARG $TARGET_ARCH_ARG -flto=thin -pthread -fPIC -O3 -DNDEBUG" \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="on" \
             -DLLVM_ENABLE_PROJECTS="clang;lld" \
             -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \

@@ -1,0 +1,21 @@
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: "Type of runner to use/architecture to build for."
+        type: choice
+        options:
+          - toolchains-ubuntu-22.04-x86
+          - toolchains-ubuntu-22.04-arm
+
+name: Linux Debug
+
+jobs:
+  debug:
+    name: debug ${{ inputs.runner }}
+    runs-on: ${{ inputs.runner }}
+    permissions:
+      contents: write
+    steps:
+      - name: Debug
+        run: ldd --version

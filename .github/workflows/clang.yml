@@ -63,7 +63,7 @@ jobs:
       - name: Package Toolchain
         run: |
           container_id="$(docker create $DOCKER_IMAGE_TAG)"
-          docker cp "$container_id:/downloads" .
+          docker cp "$container_id:/downloads/artifacts" .
 
       - name: Determine Release Tag
         run: |
@@ -76,7 +76,7 @@ jobs:
       - name: Upload toolchain to release
         uses: svenstaro/upload-release-action@v2
         with:
-          file: "*.tar.zst"
+          file: "artifacts/*.tar.zst"
           file_glob: true
           tag: ${{ env.RELEASE_TAG }}
           overwrite: true

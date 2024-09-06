@@ -68,3 +68,7 @@ done
 
 cd package
 tar -cf - * | zstd --ultra -22 -o "../linux_$clang_arch.tar.zst"
+
+cd ..
+mkdir artifacts
+mv "linux_$clang_arch.tar.zst" "artifacts/linux_$clang_arch.tar.zst"

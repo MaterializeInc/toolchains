@@ -37,157 +37,40 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Install required tools
-        run: sudo apt-get install -y zstd cmake gcc ninja-build
-
       - name: Clone MaterializeInc/toolchains repo
         uses: actions/checkout@v4
 
-      - name: Install bootstrap clang
-        run: sudo clang/llvm.sh ${{ inputs.clang_bootstrap_major_version }}
-
-      - name: Clone llvm-project at Version
-        uses: actions/checkout@v4
-        with:
-          repository: llvm/llvm-project
-          ref: 'llvmorg-${{ inputs.clang_version }}'
-          fetch-depth: 1 # llvm-project is quite large
-          path: llvm-project
-
       - name: Get args
         run: |
-          TARGET_CPU=${{ inputs.cpu_target }}
-          TARGET_CPU_ARG=""
-          if [ -n "$TARGET_CPU" ]; then
-            TARGET_CPU_ARG="-mcpu=$TARGET_CPU"
-          fi
-          echo "TARGET_CPU_ARG=$TARGET_CPU_ARG" >> $GITHUB_ENV
+          runner=${{ inputs.runner }}
+          runner_tag="${runner: -3}"
+          
+          DOCKER_IMAGE_TAG="clang-${{ inputs.clang_version }}-$runner_tag"
+          echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
 
-          TARGET_ARCH=${{ inputs.arch_target }}
-          TARGET_ARCH_ARG=""
-          if [ -n "$TARGET_ARCH" ]; then
-            TARGET_ARCH_ARG="-march=$TARGET_ARCH"
-          fi
-            echo "TARGET_ARCH_ARG=$TARGET_ARCH_ARG" >> $GITHUB_ENV
+      - name: Build in Docker
+        run: |
+          docker build \
+            --build-arg BOOTSTRAP_CLANG_VERSION="${{ inputs.clang_bootstrap_major_version }}" \
+            --build-arg CLANG_VERSION="${{ inputs.clang_version }}" \
+            --build-arg TARGET_CPU="${{ inputs.cpu_target }}" \
+            --build-arg TARGET_CPU_ARCH="${{ inputs.arch_target }}" \
+            --target package_image \
+            --tag "$DOCKER_IMAGE_TAG" \
+            .
 
-          case ${{ inputs.runner }} in
-            toolchains-ubuntu-22.04-x86)
-              CLANG_ARCH=x86_64
-              ;;
-            toolchains-ubuntu-22.04-arm)
-              CLANG_ARCH=aarch64
-              ;;
-            *)
-              echo "Programming error, unknown runner"
-              exit 1
-              ;;
-          esac
-          echo "CLANG_ARCH=$CLANG_ARCH" >> $GITHUB_ENV
-          echo "CLANG_TARGET=$CLANG_ARCH-unknown-linux-gnu" >> $GITHUB_ENV
+      - name: Package Toolchain
+        run: |
+          container_id="$(docker create $DOCKER_IMAGE_TAG)"
+          docker cp "$container_id:/downloads" .
 
-          CLANG_VERSION=${{ inputs.clang_version }}
-          CLANG_MAJOR_MINOR_VERSION=$(echo "$CLANG_VERSION" | cut -d. -f1-2)
-          echo "CLANG_VERSION=$CLANG_VERSION" >> $GITHUB_ENV
-          echo "CLANG_MAJOR_MINOR_VERSION=$CLANG_MAJOR_MINOR_VERSION" >> $GITHUB_ENV
-
-          C_BINARY="clang-${{ inputs.clang_bootstrap_major_version }}"
-          echo "C_BINARY=$C_BINARY" >> $GITHUB_ENV
-
-          CXX_BINARY="clang++-${{ inputs.clang_bootstrap_major_version }}"
-          echo "CXX_BINARY=$CXX_BINARY" >> $GITHUB_ENV
-
-          LLD_BINARY="lld-${{ inputs.clang_bootstrap_major_version }}"
-          echo "LLD_BINARY=$LLD_BINARY" >> $GITHUB_ENV
-
-          RELEASE_TAG="clang-${{ inputs.clang_version }}"
+      - name: Determine Release Tag
+        run: |
+          RELEASE_TAG="linux-$GITHUB_TAG"
           if [ -n "${{ inputs.github_tag }}" ]; then
             RELEASE_TAG="${{ inputs.github_tag }}"
           fi
           echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
-
-          echo $GITHUB_ENV
-
-      - name: cmake configure
-        run: | 
-          libs_dir="$CLANG_ARCH"-linux-gnu
-          echo $libs_dir
-
-          cd llvm-project
-          cmake -G Ninja -S llvm -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_FLAGS="$TARGET_CPU_ARG $TARGET_ARCH_ARG -flto=thin -pthread -fPIC -O3 -DNDEBUG" \
-            -DCMAKE_CXX_FLAGS="$TARGET_CPU_ARG $TARGET_ARCH_ARG -flto=thin -pthread -fPIC -O3 -DNDEBUG" \
-            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="on" \
-            -DLLVM_ENABLE_PROJECTS="clang;lld" \
-            -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
-            -DLLVM_DISTRIBUTION_COMPONENTS="clang-resource-headers" \
-            -DCMAKE_C_COMPILER="$C_BINARY" \
-            -DCMAKE_CXX_COMPILER="$CXX_BINARY" \
-            -DCMAKE_CXX_STANDARD=17 \
-            -DLLVM_STATIC_LINK_CXX_STDLIB=ON \
-            -DLLVM_USE_LINKER="$LLD_BINARY" \
-            -DLLVM_ENABLE_LTO=Thin \
-            -DLLVM_ENABLE_PIC=ON \
-            -DLLVM_ENABLE_THREADS=ON \
-            -DLLVM_ENABLE_ZLIB=FORCE_ON \
-            -DBUILD_SHARED_LIBS=OFF \
-            -DLLVM_INCLUDE_UTILS=OFF \
-            -DLLVM_INCLUDE_TESTS=OFF \
-            -DLLVM_INCLUDE_EXAMPLES=OFF \
-            -DLLVM_INCLUDE_BENCHMARKS=OFF \
-            -DLLVM_INCLUDE_DOCS=OFF \
-            -DTerminfo_LIBRARIES=/usr/lib/$libs_dir/libtinfo.a \
-            -DZLIB_LIBRARY=/usr/lib/$libs_dir/libz.a
-
-      - name: build clang
-        run: |
-          cd llvm-project
-          CC="$C_BINARY" CXX="$CXX_BINARY" LD="$LLD_BINARY" cmake --build build --target \
-            clang \
-            lld \
-            llvm-ar \
-            llvm-as \
-            llvm-cov \
-            llvm-dwp \
-            llvm-libtool-darwin \
-            llvm-nm \
-            llvm-objcopy \
-            llvm-objdump \
-            llvm-profdata \
-            llvm-strip \
-            llvm-ranlib \
-            cxx \
-            cxxabi \
-            unwind \
-            builtins
-
-      # Package the toolchain by copying everything listed from the following files:
-      #
-      #  * bin.txt
-      #  * include.txt
-      #  * lib.txt
-      #
-      # Note: There is a header file `__config_site` that gets generated in a platform specific
-      # directory but to support cross compiling we move it into the normal `include` dir. This is
-      # bit hacky, but I've manually confirmed the file is the same for both architectures.
-      - name: package toolchain
-        run: |
-          mkdir package
-
-          mv llvm-project/build/include/$CLANG_TARGET/c++/v1/__config_site llvm-project/build/include/c++/v1/__config_site
-
-          for dir in bin include lib; do
-            mkdir package/$dir
-            cat clang/$dir.txt | while read -r val; do 
-              val=${val#linux:}
-              if [[ $val != mac* && -n $val ]]; then
-                eval cp -rP llvm-project/build/$dir/$val package/$dir/
-              fi
-            done
-          done
-
-          cd package
-          tar -cf - * | zstd --ultra -22 -o "../linux_$CLANG_ARCH.tar.zst"
 
       - name: Upload toolchain to release
         uses: svenstaro/upload-release-action@v2

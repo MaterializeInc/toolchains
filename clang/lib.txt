@@ -11,4 +11,4 @@ mac:libunwind.1.0.dylib
 mac:libunwind.1.dylib
 mac:libunwind.a
 mac:libunwind.dylib
-linux:$CLANG_TARGET
+linux:$clang_target

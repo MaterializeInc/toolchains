@@ -50,6 +50,7 @@ jobs:
 
       - name: Build in Docker
         run: |
+          cd clang
           docker build \
             --build-arg BOOTSTRAP_CLANG_VERSION="${{ inputs.clang_bootstrap_major_version }}" \
             --build-arg CLANG_VERSION="${{ inputs.clang_version }}" \

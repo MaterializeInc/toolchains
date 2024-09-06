@@ -1,6 +1,4 @@
-# Make sure this image has a glibc version > 2.35, so we avoid this issue:
-# <https://github.com/llvm/llvm-project/issues/64512>
-FROM ubuntu:23.04 as base_image
+FROM ubuntu:22.04 as base_image
 
 # Tools needed to install bootsrap clang.
 RUN apt-get update && apt-get install -y \

@@ -92,6 +92,7 @@ cmake -G Ninja -S llvm -B build \
     -DLLVM_INCLUDE_EXAMPLES=OFF \
     -DLLVM_INCLUDE_BENCHMARKS=OFF \
     -DLLVM_INCLUDE_DOCS=OFF \
+    -DLIBUNWIND_INSTALL_HEADERS=ON \
     -DTerminfo_LIBRARIES=/usr/lib/$libs_dir/libtinfo.a \
     -DZLIB_LIBRARY=/usr/lib/$libs_dir/libz.a \
     -Dzstd_LIBRARY=/usr/lib/$libs_dir/libzstd.a

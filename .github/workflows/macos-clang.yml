@@ -12,7 +12,7 @@ on:
       github_tag:
         description: "Tag to upload the release to."
         type: string
-        required: false
+        required: true
 
 name: macOS Clang
 

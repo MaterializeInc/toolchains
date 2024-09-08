@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as base_image
+FROM ubuntu:24.04 as base_image
 
 # Tools needed to install bootsrap clang.
 RUN apt-get update && apt-get install -y \

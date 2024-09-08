@@ -34,7 +34,10 @@ case $build_arch in
         exit 1
     ;;
 esac
+
+# These values are used in the `.txt` files that define what we package.
 clang_target="$clang_arch-unknown-linux-gnu"
+clang_major=$(echo "$clang_version" | cut -d '.' -f 1)
 
 # Package the toolchain by copying everything listed from the following files:
 #
@@ -51,6 +54,10 @@ mkdir package
 mv llvm-project/build/include/$clang_target/c++/v1/__config_site llvm-project/build/include/c++/v1/__config_site
 
 # Copy all of the files into the 'package' dir.
+#
+# TODO(parkmycar): The `lib` directory is a bit heavy and we could strip out a
+# few unused `libcompiler_rt` libraries, but for now it's easier to just
+# include them all.
 
 for dir in bin include lib; do
     mkdir package/$dir

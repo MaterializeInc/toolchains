@@ -1,4 +1,9 @@
-clang*
+clang
+clang-$clang_major
+clang-cl
+clang-cpp
+clang++
+clang-tblgen
 lld
 ld.lld
 ld64.lld

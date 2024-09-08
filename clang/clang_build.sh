@@ -65,8 +65,9 @@ clang_major_minor_version=$(echo "$clang_version" | cut -d. -f1-2)
 
 cmake -G Ninja -S llvm -B build \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_C_FLAGS="$target_cpu_arg $target_arch_arg -flto=thin -pthread -fPIC -O3 -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS="$target_cpu_arg $target_arch_arg -flto=thin -pthread -fPIC -O3 -DNDEBUG" \
+    -DCMAKE_C_FLAGS="-flto=thin -pthread -fPIC -O3 -DNDEBUG $target_cpu_arg $target_arch_arg" \
+    -DCMAKE_CXX_FLAGS="-flto=thin -pthread -fPIC -O3 -DNDEBUG $target_cpu_arg $target_arch_arg" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-fPIC" \
     -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="on" \
     -DLLVM_ENABLE_PROJECTS="clang;lld" \
     -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
@@ -99,21 +100,4 @@ cmake -G Ninja -S llvm -B build \
 
 # Actually build Clang and friends.
 
-CC="$c_binary" CXX="$cxx_binary" LD="$lld_binary" cmake --build build --target \
-    clang \
-    lld \
-    llvm-ar \
-    llvm-as \
-    llvm-cov \
-    llvm-dwp \
-    llvm-libtool-darwin \
-    llvm-nm \
-    llvm-objcopy \
-    llvm-objdump \
-    llvm-profdata \
-    llvm-strip \
-    llvm-ranlib \
-    cxx \
-    cxxabi \
-    unwind \
-    builtins
+cmake --build build --target all

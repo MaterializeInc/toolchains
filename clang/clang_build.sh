@@ -100,4 +100,23 @@ cmake -G Ninja -S llvm -B build \
 
 # Actually build Clang and friends.
 
-cmake --build build --target all
+cmake --build build --target \
+    clang \
+    lld \
+    llvm-ar \
+    llvm-as \
+    llvm-cov \
+    llvm-dwp \
+    llvm-libtool-darwin \
+    llvm-nm \
+    llvm-objcopy \
+    llvm-objdump \
+    llvm-profdata \
+    llvm-strip \
+    llvm-ranlib \
+    cxx \
+    cxxabi \
+    unwind \
+    builtins \
+    runtimes \
+    sancov

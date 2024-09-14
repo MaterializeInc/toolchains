@@ -11,6 +11,7 @@ lld-link
 llvm-ar
 llvm-as
 llvm-cov
+llvm-dwarfdump
 llvm-dwp
 llvm-libtool-darwin
 llvm-nm

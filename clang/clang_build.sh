@@ -107,6 +107,7 @@ cmake --build build --target \
     llvm-as \
     llvm-cov \
     llvm-dwp \
+    llvm-dwarfdump \
     llvm-libtool-darwin \
     llvm-nm \
     llvm-objcopy \

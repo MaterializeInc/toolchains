@@ -45,8 +45,10 @@ jobs:
 
           CLANG_VERSION=${{ inputs.clang_version }}
           CLANG_MAJOR_MINOR_VERSION=$(echo "$CLANG_VERSION" | cut -d. -f1-2)
+          clang_major=$(echo "$CLANG_VERSION" | cut -d '.' -f 1)
           echo "CLANG_VERSION=$CLANG_VERSION" >> $GITHUB_ENV
           echo "CLANG_MAJOR_MINOR_VERSION=$CLANG_MAJOR_MINOR_VERSION" >> $GITHUB_ENV
+          echo "clang_major=$clang_major" >> $GITHUB_ENV
 
           RELEASE_TAG="clang-${{ inputs.clang_version }}"
           if [ -n "${{ inputs.github_tag }}" ]; then
@@ -67,7 +69,7 @@ jobs:
               -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="on" \
               -DLLVM_ENABLE_PROJECTS="clang;lld" \
               -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
-              -DLLVM_DISTRIBUTION_COMPONENTS="clang-resource-headers;libclang" \
+              -DLLVM_DISTRIBUTION_COMPONENTS="clang-resource-headers" \
               -DLLVM_ENABLE_LTO=Thin \
               -DLLVM_ENABLE_PIC=ON \
               -DLLVM_ENABLE_THREADS=ON \

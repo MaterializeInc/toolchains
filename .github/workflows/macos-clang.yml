@@ -5,6 +5,14 @@ on:
         description: "Version of clang we'll build."
         type: string
         required: true
+      runner:
+        description: "Type of runner to use/architecture to build for."
+        type: choice
+        options:
+          # ARM
+          - macos-latest-xlarge
+          # x86_64
+          - macos-latest-large
       cpu_target:
         description: "Type of CPU to optimize for."
         type: string
@@ -19,7 +27,7 @@ name: macOS Clang
 jobs:
   build_clang:
     name: build clang macOS
-    runs-on: macos-latest-xlarge
+    runs-on: ${{ inputs.runner }}
     permissions:
       contents: write
     steps:
@@ -39,7 +47,19 @@ jobs:
 
       - name: Get args
         run: |
-          CLANG_ARCH=aarch64
+          case ${{ inputs.runner }} in
+            "macos-latest-xlarge")
+              CLANG_ARCH=aarch64
+            ;;
+            "macos-latest-large")
+              CLANG_ARCH=x86_64
+            ;;
+            *)
+              echo "Programming error, unknown platform"
+              exit 1
+            ;;
+          esac
+
           echo "CLANG_ARCH=$CLANG_ARCH" >> $GITHUB_ENV
           echo "CLANG_TARGET=$CLANG_ARCH-apple-darwin" >> $GITHUB_ENV
 

@@ -41,13 +41,21 @@ jobs:
 
       - name: Package SDK
         run: |
-          mkdir working working/$SDK_NAME
+          mkdir working working/$SDK_NAME working/$SDK_NAME-min
           mkdir artifacts
 
           cp -rP $SDK_PATH/* working/$SDK_NAME
           cat macos-sysroot/remove.txt | while read -r val; do eval rm -v working/$SDK_NAME/$val || true; done
           cd working
           tar -cf - $SDK_NAME/* | zstd --ultra -22 -o "../artifacts/$SDK_NAME.tar.zst"
+
+          cd ..
+
+          cp -rP $SDK_PATH/* working/$SDK_NAME-min
+          cat macos-sysroot/min-remove.txt | while read -r val; do eval rm -rf working/$SDK_NAME-min/$val || true; done
+          cat macos-sysroot/min-add.txt | while read -r val; do eval mkdir -p working/$SDK_NAME-min/$val && cp -r working/$SDK_NAME/$val/* working/$SDK_NAME-min/$val/.; done
+          cd working
+          tar -cf - $SDK_NAME-min/* | zstd --ultra -22 -o "../artifacts/$SDK_NAME-min.tar.zst"
 
       - name: Determine Release Tag
         run: |

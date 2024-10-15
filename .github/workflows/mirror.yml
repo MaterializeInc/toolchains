@@ -1,0 +1,46 @@
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "URL of the artifact to mirror."
+        type: string
+        required: true
+      github_tag:
+        description: "Tag to upload the artifact to."
+        type: string
+        required: true
+      sha256_hash:
+        description: "Hash of the downloaded artifact to validate."
+        type: string
+        required: true
+  
+env:
+  XZ_OPT: "-T0"
+
+name: Mirror
+
+jobs:
+  mirror_artifact:
+    name: Mirror Artifact
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download and Validate Artifact
+        run: |
+          mkdir downloads
+          cd downloads
+
+          ARTIFACT_NAME=$(basename ${{ inputs.url }})
+
+          wget ${{ inputs.url }}
+          echo '${{ inputs.sha256_hash }} $ARTIFACT_NAME' | sha256sum --check
+
+      - name: Upload zstd Compressed Artifacts to Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file: "downloads/*"
+          file_glob: true
+          tag: ${{ inputs.github_tag }}
+          overwrite: true

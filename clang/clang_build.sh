@@ -120,4 +120,5 @@ cmake --build build --target \
     unwind \
     builtins \
     runtimes \
-    sancov
+    sancov \
+    libclang

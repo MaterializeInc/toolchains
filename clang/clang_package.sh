@@ -38,6 +38,7 @@ esac
 # These values are used in the `.txt` files that define what we package.
 clang_target="$clang_arch-unknown-linux-gnu"
 clang_major=$(echo "$clang_version" | cut -d '.' -f 1)
+clang_major_minor_version=$(echo "$clang_version" | cut -d. -f1-2)
 
 # Package the toolchain by copying everything listed from the following files:
 #

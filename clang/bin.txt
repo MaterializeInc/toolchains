@@ -20,3 +20,4 @@ llvm-objdump
 llvm-profdata
 llvm-strip
 llvm-ranlib
+wasm-ld

@@ -75,6 +75,9 @@ COPY bin.txt bin.txt
 COPY include.txt include.txt
 COPY lib.txt lib.txt
 
+COPY bin_libclang.txt bin_libclang.txt
+COPY lib_libclang.txt lib_libclang.txt
+
 COPY clang_package.sh clang_package.sh
 RUN chmod +x clang_package.sh
 

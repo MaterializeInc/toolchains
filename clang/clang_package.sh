@@ -38,6 +38,8 @@ esac
 # These values are used in the `.txt` files that define what we package.
 clang_target="$clang_arch-unknown-linux-gnu"
 clang_major=$(echo "$clang_version" | cut -d '.' -f 1)
+clang_major_minor=$(echo "$clang_version" | cut -d. -f1-2)
+shared_extension="so"
 
 # Package the toolchain by copying everything listed from the following files:
 #
@@ -79,3 +81,39 @@ tar -cf - * | zstd --ultra -22 -o "../linux_$clang_arch.tar.zst"
 cd ..
 mkdir artifacts
 mv "linux_$clang_arch.tar.zst" "artifacts/linux_$clang_arch.tar.zst"
+
+# Package up a libclang toolchain.
+
+mkdir package_libclang
+
+# Linux nests the libc++ one directory deep, so let's move that up.
+eval cp -rP llvm-project/build/lib/$clang_target/libc++* llvm-project/build/lib/.
+
+for dir in bin lib; do
+    mkdir package_libclang/$dir
+    cat "$dir"_libclang.txt | while read -r val; do
+        # Skip anything that starts with "mac".
+        if [[ "$val" == mac* && -n $val ]]; then
+            continue
+        fi
+        # Strip the 'linux:' prefix if it exists.
+        val=${val#linux:}
+        
+        # Determine which build artifacts to read from.
+        build_dir="build_libclang"
+        if [[ "$val" == build:* ]]; then
+            build_dir="build"
+        fi
+        # Strip the 'build:' prefix if it exists.
+        val=${val#build:}
+        eval cp -rP llvm-project/$build_dir/$dir/$val package_libclang/$dir/
+    done
+done
+
+# Compress the whole directory.
+
+cd package_libclang
+tar -cf - * | zstd --ultra -22 -o ../linux_"$clang_arch"_libclang.tar.zst
+
+cd ..
+mv linux_"$clang_arch"_libclang.tar.zst artifacts/linux_"$clang_arch"_libclang.tar.zst

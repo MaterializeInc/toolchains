@@ -69,11 +69,14 @@ jobs:
           echo "CLANG_TARGET=$CLANG_ARCH-apple-darwin" >> $GITHUB_ENV
 
           CLANG_VERSION=${{ inputs.clang_version }}
-          CLANG_MAJOR_MINOR_VERSION=$(echo "$CLANG_VERSION" | cut -d. -f1-2)
+          clang_major_minor=$(echo "$CLANG_VERSION" | cut -d. -f1-2)
           clang_major=$(echo "$CLANG_VERSION" | cut -d '.' -f 1)
           echo "CLANG_VERSION=$CLANG_VERSION" >> $GITHUB_ENV
-          echo "CLANG_MAJOR_MINOR_VERSION=$CLANG_MAJOR_MINOR_VERSION" >> $GITHUB_ENV
+          
+          echo "clang_version=$CLANG_VERSION" >> $GITHUB_ENV
+          echo "clang_major_minor=$clang_major_minor" >> $GITHUB_ENV
           echo "clang_major=$clang_major" >> $GITHUB_ENV
+          echo "shared_extension=dylib" >> $GITHUB_ENV
 
           echo "ZSTD_ARG=$ZSTD_ARG" >> $GITHUB_ENV
 
@@ -129,8 +132,12 @@ jobs:
             cxx \
             cxxabi \
             unwind \
-            builtins \
-            libclang
+            builtins
+
+      - name: build libclang
+        run: |
+          cd llvm-project
+          cmake --build build --target libclang
 
       - name: package toolchain
         run: |
@@ -148,6 +155,31 @@ jobs:
 
           cd package
           tar -cf - * | zstd --ultra -22 -o "../darwin_$CLANG_ARCH.tar.zst"
+
+      - name: package libclang
+        run: |
+          mkdir package_libclang
+
+          for dir in bin lib; do
+            mkdir package_libclang/$dir
+            cat clang/"$dir"_libclang.txt | while read -r val; do
+              # Skip anything that starts with "linux".
+              if [[ "$val" == linux* && -n $val ]]; then
+                  continue
+              fi
+              # Strip the 'mac:' prefix if it exists.
+              val=${val#mac:}
+
+              # Unlike Linux we build into a single directory.
+              build_dir="build"
+              # Strip the 'build:' prefix if it exists.
+              val=${val#build:}
+              eval cp -rP llvm-project/$build_dir/$dir/$val package_libclang/$dir/
+            done
+          done
+
+          cd package_libclang
+          tar -cf - * | zstd --ultra -22 -o ../darwin_"$CLANG_ARCH"_libclang.tar.zst
 
       - name: Upload Toolchain Artifact
         uses: actions/upload-artifact@v4

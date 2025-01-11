@@ -59,7 +59,7 @@ esac
 
 clang_target="$clang_arch-unknown-linux-gnu"
 libs_dir="$clang_arch-linux-gnu"
-clang_major_minor_version=$(echo "$clang_version" | cut -d. -f1-2)
+clang_major_minor=$(echo "$clang_version" | cut -d. -f1-2)
 
 # Configure the build.
 
@@ -121,3 +121,36 @@ cmake --build build --target \
     builtins \
     runtimes \
     sancov
+
+# Configure the build for libclang.
+
+cmake -G Ninja -S llvm -B build_libclang \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_FLAGS="-flto=thin -pthread -fPIC -O3 -DNDEBUG $target_cpu_arg $target_arch_arg" \
+    -DCMAKE_CXX_FLAGS="-flto=thin -pthread -fPIC -O3 -DNDEBUG $target_cpu_arg $target_arch_arg" \
+    -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="on" \
+    -DLLVM_ENABLE_PROJECTS="clang" \
+    -DCMAKE_C_COMPILER="$c_binary" \
+    -DCMAKE_CXX_COMPILER="$cxx_binary" \
+    -DCMAKE_CXX_STANDARD=17 \
+    -DLLVM_STATIC_LINK_CXX_STDLIB=ON \
+    -DLLVM_USE_LINKER="$lld_binary" \
+    -DLLVM_ENABLE_LIBCXX=ON \
+    -DLLVM_ENABLE_LTO=Thin \
+    -DLLVM_ENABLE_PIC=ON \
+    -DLLVM_ENABLE_THREADS=ON \
+    -DLLVM_ENABLE_TERMINFO=OFF \
+    -DLLVM_ENABLE_ZLIB=FORCE_ON \
+    -DLLVM_ENABLE_ZSTD=FORCE_ON \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DLLVM_INCLUDE_UTILS=OFF \
+    -DLLVM_INCLUDE_TESTS=OFF \
+    -DLLVM_INCLUDE_EXAMPLES=OFF \
+    -DLLVM_INCLUDE_BENCHMARKS=OFF \
+    -DLLVM_INCLUDE_DOCS=OFF \
+    -DZLIB_LIBRARY=/usr/lib/$libs_dir/libz.a \
+    -Dzstd_LIBRARY=/usr/lib/$libs_dir/libzstd.a
+
+# Actually build libclang.
+
+cmake --build build_libclang --target libclang

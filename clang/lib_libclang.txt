@@ -1,0 +1,8 @@
+libclang.$shared_extension
+build:libc++.$shared_extension
+linux:libclang.$shared_extension.$clang_version
+linux:libclang.$shared_extension.$clang_major_minor
+linux:build:libc++.$shared_extension.1.0
+linux:build:libc++.$shared_extension.1
+mac:build:libc++.1.0.$shared_extension
+mac:build:libc++.1.$shared_extension

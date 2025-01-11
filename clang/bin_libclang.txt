@@ -1,0 +1,5 @@
+build:clang
+build:clang-$clang_major
+build:clang-cl
+build:clang-cpp
+build:clang++

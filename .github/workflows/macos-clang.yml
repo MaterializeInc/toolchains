@@ -21,6 +21,9 @@ on:
         description: "Tag to upload the release to."
         type: string
         required: true
+      overwrite:
+        description: "DANGEROUS. Overwrite the existing artifacts."
+        type: boolean
 
 name: macOS Clang
 
@@ -154,4 +157,4 @@ jobs:
           file: "*.tar.zst"
           file_glob: true
           tag: ${{ env.RELEASE_TAG }}
-          overwrite: true
+          overwrite: ${{ inputs.overwrite }}

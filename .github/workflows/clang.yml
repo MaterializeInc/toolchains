@@ -27,6 +27,9 @@ on:
         description: "Tag to upload the release to."
         type: string
         required: true
+      overwrite:
+        description: "DANGEROUS. Overwrite the existing artifacts."
+        type: boolean
 
 name: Linux Clang
 
@@ -79,4 +82,4 @@ jobs:
           file: "artifacts/*.tar.zst"
           file_glob: true
           tag: ${{ env.RELEASE_TAG }}
-          overwrite: true
+          overwrite:  ${{ inputs.overwrite }}

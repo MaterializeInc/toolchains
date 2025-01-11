@@ -53,9 +53,11 @@ jobs:
           case ${{ inputs.runner }} in
             "macos-latest-xlarge")
               CLANG_ARCH=aarch64
+              ZSTD_ARG="-Dzstd_LIBRARY=/opt/homebrew/opt/zstd/lib/libzstd.a"
             ;;
             "macos-latest-large")
               CLANG_ARCH=x86_64
+              ZSTD_ARG=""
             ;;
             *)
               echo "Programming error, unknown platform"
@@ -72,6 +74,8 @@ jobs:
           echo "CLANG_VERSION=$CLANG_VERSION" >> $GITHUB_ENV
           echo "CLANG_MAJOR_MINOR_VERSION=$CLANG_MAJOR_MINOR_VERSION" >> $GITHUB_ENV
           echo "clang_major=$clang_major" >> $GITHUB_ENV
+
+          echo "ZSTD_ARG=$ZSTD_ARG" >> $GITHUB_ENV
 
           RELEASE_TAG="clang-${{ inputs.clang_version }}"
           if [ -n "${{ inputs.github_tag }}" ]; then
@@ -102,7 +106,7 @@ jobs:
               -DLLVM_INCLUDE_TESTS=OFF \
               -DLLVM_INCLUDE_EXAMPLES=OFF \
               -DLLVM_INCLUDE_BENCHMARKS=OFF \
-              -DLLVM_INCLUDE_DOCS=OFF
+              -DLLVM_INCLUDE_DOCS=OFF ${{ env.ZSTD_ARG }}
 
       - name: build clang
         run: |

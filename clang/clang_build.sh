@@ -96,7 +96,8 @@ cmake -G Ninja -S llvm -B build \
     -DLIBUNWIND_INSTALL_HEADERS=ON \
     -DTerminfo_LIBRARIES=/usr/lib/$libs_dir/libtinfo.a \
     -DZLIB_LIBRARY=/usr/lib/$libs_dir/libz.a \
-    -Dzstd_LIBRARY=/usr/lib/$libs_dir/libzstd.a
+    -Dzstd_LIBRARY=/usr/lib/$libs_dir/libzstd.a \
+    -DRUNTIMES_CMAKE_ARGS="-DCMAKE_C_FLAGS=-fno-omit-frame-pointer;-DCMAKE_CXX_FLAGS=-fno-omit-frame-pointer"
 
 # Actually build Clang and friends.
 

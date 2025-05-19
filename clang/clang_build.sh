@@ -96,7 +96,8 @@ cmake -G Ninja -S llvm -B build \
     -DLIBUNWIND_INSTALL_HEADERS=ON \
     -DTerminfo_LIBRARIES=/usr/lib/$libs_dir/libtinfo.a \
     -DZLIB_LIBRARY=/usr/lib/$libs_dir/libz.a \
-    -Dzstd_LIBRARY=/usr/lib/$libs_dir/libzstd.a
+    -Dzstd_LIBRARY=/usr/lib/$libs_dir/libzstd.a \
+    -DLIBXML2_LIBRARY=/usr/lib/$libs_dir/libxml2.a
 
 # Actually build Clang and friends.
 
@@ -149,7 +150,8 @@ cmake -G Ninja -S llvm -B build_libclang \
     -DLLVM_INCLUDE_BENCHMARKS=OFF \
     -DLLVM_INCLUDE_DOCS=OFF \
     -DZLIB_LIBRARY=/usr/lib/$libs_dir/libz.a \
-    -Dzstd_LIBRARY=/usr/lib/$libs_dir/libzstd.a
+    -Dzstd_LIBRARY=/usr/lib/$libs_dir/libzstd.a \
+    -DLIBXML2_LIBRARY=/usr/lib/$libs_dir/libxml2.a
 
 # Actually build libclang.
 

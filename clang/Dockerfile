@@ -42,7 +42,8 @@ RUN apt-get update && apt-get install -y \
     # Libraries we statically link into clang.
     zlib1g-dev \
     libzstd-dev \
-    libncurses-dev
+    libncurses-dev \
+    libxml2-dev
 
 # Targets we optimize for.
 ARG TARGET_CPU
